@@ -171,36 +171,33 @@ export function calcMoneySaved(kgCO2Saved) {
 }
 
 // Sustainability Score (PSS) calculation
-export function calcSustainabilityScore(profile) {
-  let transport = 0;
-  const mode = profile.primaryTransport;
-  if (mode === 'walk' || mode === 'cycle') transport = 25;
-  else if (mode === 'metro' || mode === 'bus' || mode === 'train') transport = 22;
-  else if (mode === 'auto') transport = 17;
-  else if (mode === 'bike') transport = (profile.dailyTransportKm || 15) < 20 ? 14 : 10;
-  else if (mode === 'car_petrol' || mode === 'car_diesel') transport = (profile.dailyTransportKm || 20) < 20 ? 8 : 3;
-  else transport = 12;
+// 30% Carbon Reduction, 25% Consistency, 25% Goal Completion, 20% Activity Logging
+export function calcSustainabilityScore(profile, activities = [], goals = []) {
+  // 1. Carbon Reduction (30%)
+  const annual = calcAnnualEmissions(profile);
+  const userFootprint = annual.total / 1000; // in tonnes
+  const baseline = 4.2; // Baseline Pune average
+  const carbonReduction = Math.max(0, Math.min(30, Math.round(30 * (1 - (userFootprint / baseline)))));
 
-  let food = 0;
-  if (profile.diet === 'vegan') food = 20;
-  else if (profile.diet === 'vegetarian') food = 17;
-  else if (profile.diet === 'occasional_nonveg') food = 13;
-  else food = 9;
+  // 2. Consistency (25%)
+  const dates = activities.map(a => a.date).filter(Boolean);
+  const uniqueDates = new Set(dates).size;
+  const consistency = Math.min(25, Math.round((uniqueDates / 7) * 25)); // Log on 7 diff days = full marks
 
-  let energy = 0;
-  const units = profile.electricityUnits || 200;
-  if (units < 100) energy = 25;
-  else if (units < 200) energy = 20;
-  else if (units < 300) energy = 15;
-  else if (units < 500) energy = 10;
-  else energy = 5;
+  // 3. Goal Completion (25%)
+  const totalGoals = goals.length;
+  const completedGoals = goals.filter(g => g.progress >= 100).length;
+  const goalCompletion = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 25) : 15; // default 15
 
-  const shopping = 10; // default moderate
-  const waste = 7;     // default some sorting
+  // 4. Activity Logging (20%)
+  const activityLogging = Math.min(20, activities.length * 2); // 10 activities logged = full marks
 
   return {
-    transport, food, energy, shopping, waste,
-    total: transport + food + energy + shopping + waste
+    carbonReduction,
+    consistency,
+    goalCompletion,
+    activityLogging,
+    total: carbonReduction + consistency + goalCompletion + activityLogging
   };
 }
 

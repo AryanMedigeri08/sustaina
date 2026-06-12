@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { id: 'coach', label: 'Arya Coach', icon: 'coach', route: 'coach' },
   { id: 'insights', label: 'Insights', icon: 'insights', route: 'insights' },
   { id: 'carbon-twin', label: 'Carbon Twin', icon: 'carbon_twin', route: 'carbon-twin' },
+  { id: 'purchase-advisor', label: 'Purchase Advisor', icon: 'shopping', route: 'purchase-advisor' },
   { id: 'reports', label: 'Reports', icon: 'reports', route: 'reports' },
   { id: 'goals', label: 'Goals', icon: 'goals', route: 'goals' },
   { id: 'community', label: 'Community', icon: 'community', route: 'community' },

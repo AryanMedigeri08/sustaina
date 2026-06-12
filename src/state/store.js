@@ -21,6 +21,11 @@ const defaultState = {
   },
   onboardingStep: 0,
   onboardingData: {},
+  memory: {
+    acceptedSuggestions: [],
+    ignoredSuggestions: [],
+    completedChallenges: []
+  }
 };
 
 let state = loadState();
@@ -31,7 +36,11 @@ function loadState() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      return { ...defaultState, ...parsed };
+      return { 
+        ...defaultState, 
+        ...parsed,
+        memory: { ...defaultState.memory, ...(parsed.memory || {}) }
+      };
     }
   } catch (e) {
     console.warn('Failed to load state:', e);
@@ -118,6 +127,40 @@ export function setSetting(key, value) {
   setState(s => ({
     ...s,
     settings: { ...s.settings, [key]: value },
+  }));
+}
+
+export function getMemory() {
+  return state.memory;
+}
+
+export function acceptSuggestion(text) {
+  setState(s => ({
+    ...s,
+    memory: {
+      ...s.memory,
+      acceptedSuggestions: [...(s.memory.acceptedSuggestions || []), text]
+    }
+  }));
+}
+
+export function ignoreSuggestion(text) {
+  setState(s => ({
+    ...s,
+    memory: {
+      ...s.memory,
+      ignoredSuggestions: [...(s.memory.ignoredSuggestions || []), text]
+    }
+  }));
+}
+
+export function completeChallenge(challengeId) {
+  setState(s => ({
+    ...s,
+    memory: {
+      ...s.memory,
+      completedChallenges: [...(s.memory.completedChallenges || []), challengeId]
+    }
   }));
 }
 

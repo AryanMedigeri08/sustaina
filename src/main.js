@@ -21,6 +21,7 @@ import { renderCommunity } from './pages/community.js';
 import { renderProfile } from './pages/profile.js';
 import { renderSettings } from './pages/settings.js';
 import { renderOnboarding } from './pages/onboarding.js';
+import { renderSmartPurchaseAdvisor } from './pages/smartPurchaseAdvisor.js';
 
 const pageRenderers = {
   'home': renderDashboard,
@@ -34,6 +35,7 @@ const pageRenderers = {
   'profile': renderProfile,
   'settings': renderSettings,
   'onboarding': renderOnboarding,
+  'purchase-advisor': renderSmartPurchaseAdvisor,
 };
 
 function renderPage(route) {
