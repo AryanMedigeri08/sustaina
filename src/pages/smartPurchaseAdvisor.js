@@ -3,7 +3,7 @@
 // Financial and carbon payback advisor with Gemini Flash analysis
 // ═══════════════════════════════════════════
 
-import { getProfile } from '../state/store.js';
+import { getProfile, addLocalPurchase, logTimelineEvent } from '../state/store.js';
 import { getPurchaseAdvice } from '../services/gemini.js';
 import { getGridFactor } from '../data/emissions.js';
 import { icons } from '../components/icons.js';
@@ -193,6 +193,31 @@ async function runAnalysis(container) {
 
   // Call API for Gemini Explanation
   const advice = await getPurchaseAdvice(name, category, cost, runningCost, energyUsage, lifetime);
+
+  // Add the evaluation to local purchase history cache and database
+  const purchaseItem = {
+    product_name: name,
+    category: category,
+    cost: cost,
+    running_cost: runningCost,
+    energy_usage: energyUsage,
+    expected_lifetime: lifetime,
+    recommendation: advice.recommendation,
+    explanation: advice.explanation,
+    annual_savings: annualSavings,
+    carbon_reduction: carbonReduction,
+    payback_period: paybackPeriod
+  };
+
+  addLocalPurchase(purchaseItem);
+
+  // Log timeline milestone event
+  logTimelineEvent({
+    type: 'purchase_evaluated',
+    title: 'Purchase Evaluated',
+    description: `Evaluated "${name}" (${category}) payback: ${advice.recommendation} recommendation, saving ${carbonReduction} kg CO₂e/year.`,
+    icon: '🛍️'
+  });
 
   const badgeColors = {
     'Yes': { bg: 'var(--green-100)', color: 'var(--green-900)', border: 'var(--green-200)' },

@@ -8,13 +8,17 @@ import { navigate, getCurrentRoute } from '../router.js';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home', icon: 'home', route: 'home' },
+  { id: 'analytics', label: 'Analytics', icon: 'analytics', route: 'analytics' },
+  { id: 'timeline', label: 'Timeline', icon: 'timeline', route: 'timeline' },
   { id: 'activity', label: 'Activity Log', icon: 'activity', route: 'activity' },
   { id: 'coach', label: 'Arya Coach', icon: 'coach', route: 'coach' },
   { id: 'insights', label: 'Insights', icon: 'insights', route: 'insights' },
   { id: 'carbon-twin', label: 'Carbon Twin', icon: 'carbon_twin', route: 'carbon-twin' },
+  { id: 'simulation-history', label: 'Simulations', icon: 'history', route: 'simulation-history' },
   { id: 'purchase-advisor', label: 'Purchase Advisor', icon: 'shopping', route: 'purchase-advisor' },
   { id: 'reports', label: 'Reports', icon: 'reports', route: 'reports' },
   { id: 'goals', label: 'Goals', icon: 'goals', route: 'goals' },
+  { id: 'notifications', label: 'Notifications', icon: 'bell', route: 'notifications' },
   { id: 'community', label: 'Community', icon: 'community', route: 'community' },
   { id: 'profile', label: 'Profile', icon: 'profile', route: 'profile' },
   { id: 'settings', label: 'Settings', icon: 'settings', route: 'settings' },

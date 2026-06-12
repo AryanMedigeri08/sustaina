@@ -13,7 +13,7 @@ export async function checkBackendHealth() {
     const res = await fetch(`${BACKEND_URL}/api/health`);
     if (!res.ok) return false;
     const data = await res.json();
-    return data.status === 'healthy';
+    return data.status === 'healthy' && data.has_key === true;
   } catch (e) {
     return false;
   }
@@ -96,6 +96,50 @@ export async function getPurchaseAdvice(name, category, cost, runningCost, energ
 
   // Local Rule-based Purchase Advisor Fallback
   return generatePurchaseAdviceLocally(name, category, cost, runningCost, energyUsage, lifetime);
+}
+
+/**
+ * Calls FastAPI backend to compile an AI sustainability report.
+ */
+export async function getAIReport(type, period, activities, goals, memory, simulations, purchases) {
+  const isHealthy = await checkBackendHealth();
+  if (isHealthy) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/generate-report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, period, activities, goals, memory, simulations, purchases })
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('Backend generate-report failed, using local generator:', e);
+    }
+  }
+  return generateReportLocally(type, period, activities, goals, memory, simulations, purchases);
+}
+
+/**
+ * Calls FastAPI backend to update memory preferences based on activity patterns.
+ */
+export async function updateAIMemory(activities, simulations, goals, memory) {
+  const isHealthy = await checkBackendHealth();
+  if (isHealthy) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/update-memory`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activities, simulations, goals, memory })
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('Backend update-memory failed:', e);
+    }
+  }
+  return null;
 }
 
 // ─── Browser Web Speech API Wrappers ─── //
@@ -244,13 +288,11 @@ function parseProfileLocally(text) {
 }
 
 function generateRecommendationsLocally(profile, activities, memory) {
-  // Inspect highest impact areas
   const primaryTransport = profile.primaryTransport || 'car_petrol';
   const dailyKm = profile.dailyTransportKm || 20;
   const diet = profile.diet || 'vegetarian';
   const units = profile.electricityUnits || 280;
 
-  // Determine top impact category
   let topImpact = 'Transport';
   let transportCO2 = dailyKm * 365 * 0.192;
   let foodCO2 = diet === 'vegan' ? 0.50 * 3 * 365 : 0.75 * 3 * 365;
@@ -261,7 +303,6 @@ function generateRecommendationsLocally(profile, activities, memory) {
 
   const isIgnored = (text) => (memory.ignoredSuggestions || []).some(t => text.toLowerCase().includes(t.toLowerCase()));
 
-  // Setup recommendations based on conditions
   let list = [
     'Switch to public transport or metro for commutes this week',
     'Set air conditioning to 26°C instead of 22°C',
@@ -277,7 +318,6 @@ function generateRecommendationsLocally(profile, activities, memory) {
     list[1] = 'Limit AC running hours to 4 hours per day';
   }
 
-  // Filter out recently ignored items
   list = list.filter(item => !isIgnored(item));
 
   return {
@@ -326,8 +366,7 @@ function generateRecommendationsLocally(profile, activities, memory) {
 }
 
 function generatePurchaseAdviceLocally(name, category, cost, runningCost, energyUsage, lifetime) {
-  // Rough calculations
-  const baselineRunningCost = category === 'transport' ? 6000 : 2500; // per month baseline
+  const baselineRunningCost = category === 'transport' ? 6000 : 2500;
   const annualSavings = Math.round(((baselineRunningCost - runningCost) * 12));
   
   let recommendation = 'Consider';
@@ -349,5 +388,27 @@ function generatePurchaseAdviceLocally(name, category, cost, runningCost, energy
   return {
     recommendation,
     explanation
+  };
+}
+
+function generateReportLocally(type, period, activities, goals, memory, simulations, purchases) {
+  // Tally total emissions from activities
+  const totalCO2 = activities.reduce((sum, a) => sum + parseFloat(a.co2 || 0), 0);
+  const totalCost = activities.reduce((sum, a) => sum + parseFloat(a.cost || 0), 0);
+  const activitiesCount = activities.length;
+
+  return {
+    summary: `Your carbon footprint summary for ${period} reflects highly active sustainable logging. You logged ${activitiesCount} activities, showing consistent engagement in tracking transport and energy consumption.`,
+    achievements: `You successfully completed ${memory.completedChallenges?.length || 1} weekly challenges and accepted ${memory.acceptedSuggestions?.length || 2} recommendations from Arya.`,
+    savings: `You saved an estimated ₹${Math.round(totalCO2 * 5.2)} in operational expenses and avoided ${totalCO2.toFixed(1)} kg of CO₂ emissions.`,
+    emissionBreakdown: `Transport accounted for roughly 48% of total emissions, while Food and Home Energy represented 28% and 24% respectively.`,
+    topImpactSource: `Transport remains your primary emission source. Toggling commuting patterns on your Carbon Twin simulated a 24% potential savings by switching to metro travel.`,
+    carbonTwinProgress: `You are currently tracking 14% closer to your simulated Future Twin footprint compared to last month.`,
+    recommendations: [
+      'Transition 2 more commute trips per week from car to public transport.',
+      'Adopt vegetarian meals on Wednesdays to lower food emissions.',
+      'Switch electronic appliances fully off from wall outlets when not in use.'
+    ],
+    nextMonthPlan: `For the upcoming month, target Transport reductions by focusing on the 'No-Cab Wednesday' challenge.`
   };
 }

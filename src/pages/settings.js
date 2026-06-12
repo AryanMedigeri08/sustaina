@@ -100,7 +100,7 @@ export function renderSettings(container) {
       </div>
 
       <!-- App Info -->
-      <div class="card stagger-5">
+      <div class="card mb-6 stagger-5">
         <div class="settings-section">
           <h3 class="settings-section-title">App Settings</h3>
           <div class="settings-row">
@@ -108,6 +108,29 @@ export function renderSettings(container) {
             <span class="settings-value">Metric (km, kg)</span>
           </div>
           ${toggle('darkMode', 'Dark Mode', settings.darkMode)}
+        </div>
+      </div>
+
+      <!-- Supabase Cloud Sync Section -->
+      <div class="card stagger-6">
+        <div class="settings-section">
+          <h3 class="settings-section-title">Supabase Cloud Sync</h3>
+          <p class="text-xs text-secondary mb-4" style="line-height: var(--leading-relaxed);">
+            Configure your own Supabase credentials to synchronize your profile, activities, goals, and history to the cloud.
+          </p>
+          <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+            <div>
+              <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Supabase Project URL</label>
+              <input type="text" id="settings-supabase-url" placeholder="https://your-project.supabase.co" value="${settings.supabaseUrl || ''}" style="width: 100%; padding: var(--space-2); border-radius: var(--radius-sm); border: 1px solid var(--border-light);" />
+            </div>
+            <div>
+              <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Supabase Anon Key</label>
+              <input type="password" id="settings-supabase-key" placeholder="eyJhbGciOi..." value="${settings.supabaseAnonKey || ''}" style="width: 100%; padding: var(--space-2); border-radius: var(--radius-sm); border: 1px solid var(--border-light);" />
+            </div>
+            <div>
+              <button class="btn btn-primary" id="btn-save-supabase" style="width: auto;">Save & Connect</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -118,5 +141,15 @@ export function renderSettings(container) {
     input.addEventListener('change', () => {
       setSetting(input.dataset.setting, input.checked);
     });
+  });
+
+  // Save Supabase credentials
+  container.querySelector('#btn-save-supabase')?.addEventListener('click', () => {
+    const url = container.querySelector('#settings-supabase-url').value.trim();
+    const key = container.querySelector('#settings-supabase-key').value.trim();
+    setSetting('supabaseUrl', url);
+    setSetting('supabaseAnonKey', key);
+    alert('Supabase credentials saved! The application will reload to establish the connection.');
+    window.location.reload();
   });
 }

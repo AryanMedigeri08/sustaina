@@ -4,13 +4,14 @@ import urllib.request
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List, Dict
 
-app = FastAPI(title="Sustaina V2 API Backend")
+app = FastAPI(title="Sustaina V3 API Backend")
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For local MVP development, allows Vite frontend
+    allow_origins=["*"],  # For local MVP development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -92,6 +93,21 @@ class PurchaseRequest(BaseModel):
     running_cost: float
     energy_usage: float
     expected_lifetime: float
+
+class ReportRequest(BaseModel):
+    type: str # 'weekly', 'monthly', 'quarterly'
+    period: str # e.g. 'May 2026'
+    activities: list
+    goals: list
+    memory: dict
+    simulations: list
+    purchases: list
+
+class UpdateMemoryRequest(BaseModel):
+    activities: list
+    simulations: list
+    goals: list
+    memory: dict
 
 
 # ─── API Endpoints ─── #
@@ -228,6 +244,75 @@ def purchase_advice(req: PurchaseRequest):
         f"Energy Usage: {req.energy_usage} kWh/year\n"
         f"Expected Lifetime: {req.expected_lifetime} years\n"
         "Evaluate this purchase."
+    )
+    
+    return call_gemini_flash(prompt, system_prompt)
+
+
+# ─── V3 AI Report & Advanced Memory Endpoints ─── #
+
+@app.post("/api/generate-report")
+def generate_report(req: ReportRequest):
+    system_prompt = (
+        "You are the Sustaina AI Reporting Engine. Compile a detailed monthly, weekly, or quarterly sustainability report.\n"
+        "The report should contain summaries of savings, emissions, carbon twin progress, and a strategic plan for the next period.\n"
+        "Use deterministic facts from the provided logs. Keep it highly personalized to their behavior.\n"
+        "Return the compiled report in the following JSON format:\n"
+        "{\n"
+        "  \"summary\": \"string (1-2 paragraphs of key insights and encouraging feedback)\",\n"
+        "  \"achievements\": \"string (highlighting major milestones reached, e.g. challenges completed)\",\n"
+        "  \"savings\": \"string (e.g. 'You saved ₹840 and 42 kg of CO₂ this month')\",\n"
+        "  \"emissionBreakdown\": \"string (summary of which sectors contributed what percentage)\",\n"
+        "  \"topImpactSource\": \"string (their highest emission category and what to do about it)\",\n"
+        "  \"carbonTwinProgress\": \"string (how close they are to their simulated Future Twin footprint)\",\n"
+        "  \"recommendations\": [\"string 1\", \"string 2\", \"string 3\"],\n"
+        "  \"nextMonthPlan\": \"string (a specific, realistic focus area for the upcoming month)\"\n"
+        "}"
+    )
+    
+    prompt = (
+        f"Report Type: {req.type}\n"
+        f"Report Period: {req.period}\n\n"
+        f"User Activities Logged: {json.dumps(req.activities)}\n"
+        f"Goals Setup: {json.dumps(req.goals)}\n"
+        f"Arya Memory: {json.dumps(req.memory)}\n"
+        f"Simulations Performed: {json.dumps(req.simulations)}\n"
+        f"Purchase Analyses Run: {json.dumps(req.purchases)}\n\n"
+        "Generate a structured, professional report."
+    )
+    
+    return call_gemini_flash(prompt, system_prompt)
+
+@app.post("/api/update-memory")
+def update_memory(req: UpdateMemoryRequest):
+    system_prompt = (
+        "You are Arya's preference extraction engine. Analyze the user's historical activities, goals, and simulations.\n"
+        "Extract behavioral traits, preferences, and interests. Specifically identify if they are:\n"
+        "- Budget sensitive (interested in saving money)\n"
+        "- Solar energy interested (run solar simulations or purchase solar templates)\n"
+        "- Vegetarian preference (mostly vegetarian activity logs)\n"
+        "- Commute preference (avoids public transit, prefers personal vehicle, or takes public transport)\n\n"
+        "Format the output in this exact JSON schema:\n"
+        "{\n"
+        "  \"userPreferences\": {\n"
+        "    \"budgetSensitive\": boolean,\n"
+        "    \"prefersVegetarian\": boolean,\n"
+        "    \"avoidsPublicTransport\": boolean,\n"
+        "    \"interestedInSolar\": boolean\n"
+        "  },\n"
+        "  \"behaviorPatterns\": {\n"
+        "    \"loggingFrequency\": \"string (high / medium / low)\",\n"
+        "    \"dominantEmissionsSector\": \"string (transport / food / energy / shopping)\"\n"
+        "  }\n"
+        "}"
+    )
+    
+    prompt = (
+        f"Activities Logged: {json.dumps(req.activities)}\n"
+        f"Simulations Performed: {json.dumps(req.simulations)}\n"
+        f"Goals: {json.dumps(req.goals)}\n"
+        f"Current Memory State: {json.dumps(req.memory)}\n"
+        "Analyze these patterns and update preferences."
     )
     
     return call_gemini_flash(prompt, system_prompt)

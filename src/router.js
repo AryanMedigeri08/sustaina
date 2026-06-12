@@ -8,7 +8,8 @@ let renderCallback = null;
 const routes = [
   'home', 'activity', 'coach', 'insights', 'carbon-twin',
   'reports', 'goals', 'community', 'profile', 'settings',
-  'onboarding', 'purchase-advisor'
+  'onboarding', 'purchase-advisor', 'auth', 'timeline', 'simulation-history',
+  'notifications', 'analytics'
 ];
 
 export function getCurrentRoute() {

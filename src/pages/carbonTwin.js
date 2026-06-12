@@ -3,7 +3,7 @@
 // Interactive deterministic future-scenario simulation
 // ═══════════════════════════════════════════
 
-import { getProfile } from '../state/store.js';
+import { getProfile, addLocalSimulation, logTimelineEvent } from '../state/store.js';
 import { 
   calcAnnualEmissions, 
   calcTreesEquivalent, 
@@ -11,6 +11,8 @@ import {
   getGridFactor
 } from '../data/emissions.js';
 import { navigate } from '../router.js';
+
+let currentSimData = null;
 
 export function renderCarbonTwin(container) {
   const profile = getProfile();
@@ -190,12 +192,26 @@ export function renderCarbonTwin(container) {
 
   // Commit changes as goal action
   document.getElementById('twin-commit-changes')?.addEventListener('click', () => {
+    if (!currentSimData) return;
+    
+    const scenarioName = prompt("Enter a name for this Carbon Twin simulation:", "Eco Transit & Vegetarian Diet") || "Future Lifestyle Simulation";
+    currentSimData.scenario_name = scenarioName;
+
+    addLocalSimulation(currentSimData);
+
+    logTimelineEvent({
+      type: 'carbon_twin_simulated',
+      title: 'Carbon Twin Simulated',
+      description: `Simulated a future scenario "${scenarioName}" with a ${currentSimData.improvement_pct}% footprint reduction (saving ${currentSimData.co2_reduction.toFixed(2)} t CO₂e).`,
+      icon: '👥'
+    });
+
     // Quick notification feedback
     const btn = document.getElementById('twin-commit-changes');
-    btn.textContent = 'Goals Saved Successfully! ✓';
+    btn.textContent = 'Scenario Saved to History! ✓';
     btn.classList.add('btn-success');
     setTimeout(() => {
-      navigate('goals');
+      navigate('simulation-history');
     }, 1200);
   });
 
@@ -239,6 +255,14 @@ export function renderCarbonTwin(container) {
     // Tally Reductions
     const totalReduction = Math.max(0, currentFootprint - futureFootprint);
     const improvementPct = Math.max(0, Math.round((totalReduction / currentFootprint) * 100));
+
+    // Store globally for committing
+    currentSimData = {
+      co2_reduction: totalReduction / 1000,
+      money_saved: calcMoneySaved(totalReduction),
+      trees_saved: calcTreesEquivalent(totalReduction),
+      improvement_pct: improvementPct
+    };
 
     // Update DOM Metrics
     document.getElementById('current-tonnes').textContent = (currentFootprint / 1000).toFixed(2);

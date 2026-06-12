@@ -6,7 +6,7 @@ import './index.css';
 import { initRouter, navigate } from './router.js';
 import { renderSidebar } from './components/sidebar.js';
 import { renderTopbar } from './components/topbar.js';
-import { isOnboardingComplete, resetState } from './state/store.js';
+import { isOnboardingComplete, resetState, initStoreSession } from './state/store.js';
 import { destroyAllCharts } from './components/charts.js';
 
 // Page modules
@@ -22,6 +22,11 @@ import { renderProfile } from './pages/profile.js';
 import { renderSettings } from './pages/settings.js';
 import { renderOnboarding } from './pages/onboarding.js';
 import { renderSmartPurchaseAdvisor } from './pages/smartPurchaseAdvisor.js';
+import { renderAuth } from './pages/auth.js';
+import { renderTimeline } from './pages/timeline.js';
+import { renderSimulationHistory } from './pages/simulationHistory.js';
+import { renderNotifications } from './pages/notifications.js';
+import { renderAnalytics } from './pages/analytics.js';
 
 const pageRenderers = {
   'home': renderDashboard,
@@ -36,6 +41,11 @@ const pageRenderers = {
   'settings': renderSettings,
   'onboarding': renderOnboarding,
   'purchase-advisor': renderSmartPurchaseAdvisor,
+  'auth': renderAuth,
+  'timeline': renderTimeline,
+  'simulation-history': renderSimulationHistory,
+  'notifications': renderNotifications,
+  'analytics': renderAnalytics,
 };
 
 function renderPage(route) {
@@ -68,7 +78,7 @@ function renderPage(route) {
 // ─── App Init ─── //
 let initialized = false;
 
-function init() {
+async function init() {
   if (initialized) return;
   initialized = true;
 
@@ -79,6 +89,9 @@ function init() {
     // Remove the ?reset param from URL cleanly
     window.history.replaceState({}, '', window.location.pathname + '#onboarding');
   }
+
+  // Initialize Supabase session (loads from localStorage first, then syncs from cloud)
+  await initStoreSession();
 
   // If user explicitly navigated to #onboarding, always show it
   const hash = window.location.hash.slice(1);

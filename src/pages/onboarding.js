@@ -3,7 +3,7 @@
 // Conversational setup using Web Speech APIs and Gemini Flash Extraction
 // ═══════════════════════════════════════════
 
-import { setOnboardingComplete } from '../state/store.js';
+import { setOnboardingComplete, logTimelineEvent, getState } from '../state/store.js';
 import { icons } from '../components/icons.js';
 import { navigate } from '../router.js';
 import { calcAnnualEmissions, calcTreesEquivalent, calcMoneySaved } from '../data/emissions.js';
@@ -732,10 +732,27 @@ function renderComplete(container) {
       memberSince: new Date().toISOString(),
     });
 
+    logTimelineEvent({
+      type: 'onboarding_completed',
+      title: 'Profile Created',
+      description: 'Successfully completed the conversational voice onboarding setup.',
+      icon: '🚀'
+    });
+
     currentStep = 0;
     restoreLayout();
-    navigate('home');
-    // Force full re-render
-    window.location.reload();
+
+    const stateObj = getState();
+    if (!stateObj.sessionUser) {
+      if (confirm('Onboarding complete! Would you like to create an account to back up your data to the cloud and enable syncing?')) {
+        navigate('auth');
+      } else {
+        navigate('home');
+        window.location.reload();
+      }
+    } else {
+      navigate('home');
+      window.location.reload();
+    }
   });
 }

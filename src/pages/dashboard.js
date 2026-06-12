@@ -2,7 +2,7 @@
 // SUSTAINA — Dashboard (Home) Page
 // ═══════════════════════════════════════════
 
-import { getProfile } from '../state/store.js';
+import { getProfile, getState } from '../state/store.js';
 import { DASHBOARD_SUMMARY, CATEGORY_BREAKDOWN, EMISSION_TREND, AI_INSIGHT } from '../data/mockData.js';
 import { createDonutChart, createLineChart } from '../components/charts.js';
 import { icons } from '../components/icons.js';
@@ -17,15 +17,54 @@ function getGreeting() {
 
 export function renderDashboard(container) {
   const profile = getProfile();
-  const summary = DASHBOARD_SUMMARY;
-  const breakdown = CATEGORY_BREAKDOWN;
+  const state = getState();
+  const isHousehold = state.settings.viewMode === 'household';
+  const multiplier = isHousehold ? (profile.householdSize || 4) : 1;
+  const greetingName = isHousehold ? `${profile.name?.split(' ')[1] || 'Sharma'} Household 👪` : (profile.name?.split(' ')[0] || 'there');
+
+  // Clone and scale summary
+  const summary = {
+    annualFootprint: (parseFloat(DASHBOARD_SUMMARY.annualFootprint) * (isHousehold ? multiplier * 0.75 : 1)).toFixed(1),
+    footprintUnit: DASHBOARD_SUMMARY.footprintUnit,
+    comparison: isHousehold ? '12% overall household efficiency saving applied' : DASHBOARD_SUMMARY.comparison,
+    co2Saved: {
+      value: (parseFloat(DASHBOARD_SUMMARY.co2Saved.value) * multiplier).toFixed(1),
+      unit: DASHBOARD_SUMMARY.co2Saved.unit,
+      trend: DASHBOARD_SUMMARY.co2Saved.trend
+    },
+    moneySaved: {
+      value: Math.round(DASHBOARD_SUMMARY.moneySaved.value * multiplier),
+      trend: DASHBOARD_SUMMARY.moneySaved.trend
+    },
+    treesEquivalent: {
+      value: Math.round(DASHBOARD_SUMMARY.treesEquivalent.value * multiplier),
+      trend: DASHBOARD_SUMMARY.treesEquivalent.trend
+    },
+    topImpactPct: DASHBOARD_SUMMARY.topImpactPct
+  };
+
+  // Adjust breakdown based on shared efficiencies
+  const breakdown = {};
+  for (const [key, cat] of Object.entries(CATEGORY_BREAKDOWN)) {
+    const scale = (key === 'energy' || key === 'waste') ? Math.min(1.8, multiplier * 0.6) : multiplier;
+    breakdown[key] = {
+      co2: Math.round(cat.co2 * scale),
+      label: cat.label,
+      color: cat.color
+    };
+  }
+
+  const totalCo2 = Object.values(breakdown).reduce((sum, c) => sum + c.co2, 0);
+  for (const key of Object.keys(breakdown)) {
+    breakdown[key].value = Math.round((breakdown[key].co2 / totalCo2) * 100);
+  }
 
   container.innerHTML = `
     <div class="page-enter">
       <!-- Header -->
       <div class="page-header">
         <div>
-          <h1 class="page-title">${getGreeting()}, ${profile.name?.split(' ')[0] || 'there'}! 🌿</h1>
+          <h1 class="page-title">${getGreeting()}, ${greetingName}! 🌿</h1>
           <p class="page-subtitle">Track. Reduce. Make a difference.</p>
         </div>
         <div class="tabs">
@@ -167,9 +206,10 @@ export function renderDashboard(container) {
     createDonutChart('dashboard-donut', donutData);
 
     const trend = EMISSION_TREND.daily;
+    const trendValues = trend.map(t => t.value * (isHousehold ? multiplier * 0.75 : 1));
     createLineChart('dashboard-trend', 
       trend.map(t => t.date),
-      trend.map(t => t.value),
+      trendValues,
       'kg CO₂'
     );
   });
