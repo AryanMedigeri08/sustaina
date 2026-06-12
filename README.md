@@ -1,69 +1,47 @@
-# 🌱 Sustaina — Your AI Sustainability Companion
+# 🌱 Sustaina — Your AI Sustainability Companion (V3)
 
 **India's most intelligent personal carbon footprint tracker**, powered by **Arya**, your AI sustainability coach.
 
-Track your daily carbon emissions, get personalized recommendations, and visualize the impact of sustainable choices — all tailored to the Indian lifestyle.
+Track your daily carbon emissions, get personalized recommendations, simulate future improvements, and build long-term sustainable habits with secure cloud syncing and AI intelligence.
 
 ---
 
-## ✨ Features
+## ✨ Features (V3)
 
-### 🎤 Voice Onboarding with Arya
-- 9-step guided onboarding flow with Arya AI coach
-- Animated waveform and pulse visuals
-- Transport mode & diet selection with icon grids
-- Profile review and sustainability goals picker
-- Auto-calculated carbon baseline on completion
+### 👥 Conversational Timeline Progress Narrative
+- **Arya Timeline (`src/pages/timeline.js`)**: A vertical chronologically connected milestones narrative.
+- **Automatic Milestone Logging**: Automatically logs events when onboarding is completed, carbon twin scenarios are saved, or purchase advisor decisions are evaluated.
 
-### 📊 Smart Dashboard
-- Real-time carbon footprint (tonnes CO₂e/year)
-- Animated donut chart — category breakdown (Transport, Food, Energy, Shopping, Waste)
-- Impact cards: CO₂ Saved, Money Saved (₹), Trees Equivalent
-- Emission trend line chart
-- AI-powered insight cards from Arya
+### 👪 Household Mode & Dynamic Aggregation
+- **Topbar Switch (`src/components/topbar.js`)**: Toggle between Personal View and Household View.
+- **Dynamic Scaling (`src/pages/dashboard.js`)**: When in Household View, emissions, savings, trees equivalents, trend graphs, and sector breakdowns scale dynamically based on household size and shared efficiency calculations.
 
-### 📝 Activity Log
-- Quick-add icons: Car, Bike, Bus, Metro, Train, Walk
-- Category filter tabs (Transport / Food / Home Energy / Shopping / Waste)
-- Detailed activity history with CO₂ per activity
-- Modal for logging custom activities
+### 🛡️ Supabase Auth & Cloud Database Sync
+- **Secure Authentication (`src/pages/auth.js`)**: Create accounts, log in, reset passwords, or continue as Guest.
+- **Auto Data Migration (`src/state/store.js`)**: When a guest signs up or logs in for the first time, all local `localStorage` guest data (activities, goals, simulations, timeline) is automatically migrated to the Supabase cloud database.
 
-### 🤖 Arya Coach
-- Weekly plan hero card with SVG progress ring
-- 4 coaching cards: Biggest Impact, Cheapest Improvement, Easy Win, Weekly Challenge
-- Data-driven recommendations based on logged activities
+### 📋 Monthly AI Reports
+- **AI Report Generator (`src/pages/reports.js`)**: Generates reports via FastAPI using Gemini Flash JSON schemas.
+- **Export Formats**: Support print-to-PDF page-break overrides and HTML5 Canvas summary cards exported to PNG.
 
-### 📈 Insights
-- Period tabs (Week / Month / Year)
-- Bar chart emission trends
-- Category breakdown with animated progress bars
-- AI insight from Arya with actionable recommendations
+### 📈 Analytics Dashboard
+- **Analytics View (`src/pages/analytics.js`)**: Displays interactive Chart.js line and bar graphs highlighting weekly/monthly footprint trends, success rates, and category changes.
 
-### 🌍 Carbon Twin™
-- Split-view: Current You vs Future You
-- Factory vs green-city visual metaphor
-- Reduction potential in tonnes, money (₹), and trees
-- "See My Path" call-to-action
+### 🌍 Carbon Twin™ History
+- **Simulations Table (`src/pages/simulationHistory.js`)**: Saves all committed Future Twin lifestyle scenarios.
+- **Comparison Tool**: Select any two scenarios for side-by-side payback and CO₂ comparisons.
 
-### 📋 Monthly Report
-- Summary metrics: Total Emissions, Reduction %, Money Saved, Trees
-- Category breakdown bars
-- Emission trend chart
-- Arya's narrative report summary
+### 🛍️ Smart Purchase Advisor payback Persistence
+- **Advisor History (`src/pages/smartPurchaseAdvisor.js`)**: Analyzes financial/carbon payback (e.g. electric scooter, solar panels) via Gemini and persists results to user history.
 
-### 🎯 Goals
-- Pre-set goals with progress bars (Reduce Emissions, Save Money, Public Transport, Eat Plants)
-- Percentage tracking with target dates
+### 🔔 Notification Center
+- **Bell Dropdown (`src/pages/notifications.js`)**: Quick notification alerts and read/unread updates in the Topbar.
+- **Notifications Page**: Displays historical notifications and settings toggles.
 
-### 👤 Profile & Achievements
-- Sustainability Score with level badge (Eco Explorer, Green Guardian, etc.)
-- XP progress bar
-- Achievement badges grid (First Log, Tree Saver, Green Commuter, etc.)
-
-### ⚙️ Settings
-- Account details, language selection
-- Notification toggles (Push, Email, Weekly Report)
-- Dark mode toggle
+### 🤖 Arya Coach & Advanced Memory
+- **Coaching (`src/pages/aryaCoach.js`)**: Recommends four action cards (Biggest Impact, Cheapest, Easy Win, Challenge).
+- **Preference Extraction (`backend/main.py`)**: Uses FastAPI `/api/update-memory` endpoint to extract behavioral traits (e.g. budget-sensitive, solar-interested) and adjusts recommendations accordingly.
+- **Offline Fallback**: Automatically falls back to local client-side rule-based parsing and generation if the FastAPI server has no configured API key.
 
 ---
 
@@ -71,14 +49,14 @@ Track your daily carbon emissions, get personalized recommendations, and visuali
 
 | Layer | Technology |
 |-------|-----------|
-| Build | [Vite](https://vitejs.dev/) |
-| Language | Vanilla JavaScript (ES Modules) |
-| Styling | Vanilla CSS with Custom Properties |
-| Charts | [Chart.js](https://www.chartjs.org/) |
-| Fonts | [Inter](https://fonts.google.com/specimen/Inter) + [Outfit](https://fonts.google.com/specimen/Outfit) |
-| Icons | Inline SVG (Lucide-style) |
-| State | localStorage-backed reactive store |
-| Backend | None (fully client-side) |
+| **Build** | [Vite](https://vitejs.dev/) |
+| **Frontend** | Vanilla JavaScript (ES Modules), HTML5 Canvas |
+| **Styling** | Vanilla CSS (with responsive grid and custom properties) |
+| **Charts** | [Chart.js](https://www.chartjs.org/) |
+| **Database & Auth** | [Supabase PostgreSQL](https://supabase.com/) |
+| **Backend API** | [FastAPI](https://fastapi.tiangolo.com/) (Python 3) |
+| **API Server** | Uvicorn |
+| **AI Engine** | Gemini 1.5 Flash (via FastAPI Proxy Backend) |
 
 ---
 
@@ -86,37 +64,43 @@ Track your daily carbon emissions, get personalized recommendations, and visuali
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v18+)
+- [Python 3.10+](https://www.python.org/)
 - npm
 
-### Installation
+### Installation & Execution
 
+#### Step 1: Install Dependencies
 ```bash
-# Clone the repo
-git clone https://github.com/AryanMedigeri08/sustaina.git
-cd sustaina
-
-# Install dependencies
+# Install Node dependencies
 npm install
 
-# Start dev server
+# Install Python backend dependencies
+pip install -r backend/requirements.txt
+```
+
+#### Step 2: Configure Environment Variables
+Copy or create `.env` in your environment or set it in your shell:
+```bash
+# For Gemini REST API access
+export GEMINI_API_KEY="your-gemini-api-key"
+
+# For Supabase integration (optional: can also configure in settings UI)
+export VITE_SUPABASE_URL="your-supabase-project-url"
+export VITE_SUPABASE_ANON_KEY="your-supabase-anon-key"
+```
+
+#### Step 3: Start the FastAPI Backend Proxy
+```bash
+python backend/main.py
+```
+The backend server will run on **http://127.0.0.1:8000**. Verify its health status by visiting `http://127.0.0.1:8000/api/health`.
+
+#### Step 4: Start the Frontend App
+In a new terminal window:
+```bash
 npm run dev
 ```
-
-The app will open at **http://localhost:3000** (or next available port).
-
-### First Visit
-On your first visit, you'll be guided through the **Voice Onboarding** flow with Arya. To re-trigger onboarding at any time, visit:
-
-```
-http://localhost:3000/?reset
-```
-
-### Production Build
-
-```bash
-npm run build
-npm run preview
-```
+The Vite development server will open the app at **http://localhost:3000** (or `http://localhost:3001`).
 
 ---
 
@@ -127,32 +111,43 @@ sustaina/
 ├── index.html                    # Root HTML
 ├── package.json                  # Dependencies & scripts
 ├── vite.config.js                # Vite configuration
+├── backend/
+│   ├── main.py                   # FastAPI proxy server (Gemini endpoints)
+│   └── requirements.txt          # Python dependencies
 ├── src/
-│   ├── index.css                 # Design system (tokens, components, animations)
+│   ├── index.css                 # Premium custom design system
 │   ├── main.js                   # App entry point & router init
 │   ├── router.js                 # Hash-based SPA router
 │   ├── components/
-│   │   ├── charts.js             # Chart.js wrappers (donut, line, bar)
+│   │   ├── charts.js             # Chart.js helper wrappers
 │   │   ├── icons.js              # Inline SVG icon library
 │   │   ├── sidebar.js            # Left navigation sidebar
-│   │   └── topbar.js             # Top header bar
+│   │   └── topbar.js             # Top header bar (auth dropdown, bell, household view)
+│   ├── services/
+│   │   ├── gemini.js             # Speech Web APIs & FastAPI call proxy
+│   │   └── supabase.js           # Supabase DB operations and clients
 │   ├── data/
-│   │   ├── emissions.js          # Indian emission factors & calculation engine
-│   │   └── mockData.js           # Demo data (activities, trends, goals)
+│   │   ├── emissions.js          # CEA/MoSPI emission factors engine
+│   │   └── mockData.js           # Chart and baseline mock data
+│   ├── state/
+│   │   └── store.js              # LocalStorage & Supabase sync reactive store
 │   ├── pages/
-│   │   ├── dashboard.js          # Home dashboard
-│   │   ├── activityLog.js        # Activity logging
-│   │   ├── aryaCoach.js          # AI coaching recommendations
-│   │   ├── insights.js           # Analytics & insights
-│   │   ├── carbonTwin.js         # Carbon Twin™ comparison
-│   │   ├── reports.js            # Monthly report
+│   │   ├── dashboard.js          # dynamic Home dashboard (scales household views)
+│   │   ├── auth.js               # Login / Signup / Recovery
+│   │   ├── timeline.js           # Milestones progress timeline
+│   │   ├── simulationHistory.js  # Carbon Twin simulation list & comparison selector
+│   │   ├── notifications.js      # Notifications dropdown & list page
+│   │   ├── analytics.js          # Weekly/monthly footprint trends charts
+│   │   ├── activityLog.js        # Activity log filter tabs
+│   │   ├── aryaCoach.js          # AI coach plan
+│   │   ├── insights.js           # Analytics bar graphs & recommendations
+│   │   ├── carbonTwin.js         # Carbon Twin comparison sliders
+│   │   ├── reports.js            # quarterly/monthly reports generator (Canvas + Print)
 │   │   ├── goals.js              # Sustainability goals
-│   │   ├── profile.js            # User profile & achievements
-│   │   ├── settings.js           # App settings
-│   │   ├── community.js          # Community (coming soon)
-│   │   └── onboarding.js         # 9-step voice onboarding flow
-│   └── state/
-│       └── store.js              # localStorage-backed state management
+│   │   ├── profile.js            # Score level details & XP badges
+│   │   ├── settings.js           # settings & Supabase URL/Key inputs
+│   │   ├── community.js          # Community
+│   │   └── onboarding.js         # Conversational voice onboarding
 ```
 
 ---
@@ -160,22 +155,11 @@ sustaina/
 ## 🌿 Carbon Calculation Engine
 
 Built with **2024 CEA/MoSPI data** for India-specific emission factors:
-
 - **Electricity**: State-wise grid factors (Maharashtra 0.79, Karnataka 0.74, Delhi 0.80 kg CO₂/kWh)
 - **Transport**: Per-km factors (Car 0.192, Bike 0.089, Metro 0.041, Bus 0.031, Train 0.014 kg CO₂)
 - **Food**: Per-meal factors (Vegan 0.50, Vegetarian 0.75, Chicken 2.45, Mutton 5.50 kg CO₂)
 - **LPG**: 37.5 kg CO₂ per cylinder
 - **Money savings**: Calculated against Indian fuel prices, electricity tariffs, and LPG costs
-
----
-
-## 🎨 Design System
-
-- **Color palette**: Forest green (#2D5016) → Sage (#6BB344) with warm neutrals
-- **Typography**: Outfit (headings) + Inter (body)
-- **Elevation**: Layered shadow system with glassmorphism cards
-- **Animations**: Waveform, pulse ring, progress ring, counter, page transitions
-- **Responsive**: Mobile-first with breakpoints at 768px and 1024px
 
 ---
 
