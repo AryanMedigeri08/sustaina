@@ -286,7 +286,7 @@ function exportPNGCard(profile, reportData) {
   // User Name
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 36px Manrope, sans-serif';
-  ctx.fillText(profile.name || 'Aryan Sharma', 50, 140);
+  ctx.fillText(profile.name || 'Aryan Medigeri', 50, 140);
 
   ctx.fillStyle = 'rgba(255,255,255,0.8)';
   ctx.font = '14px Inter, sans-serif';

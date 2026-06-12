@@ -184,7 +184,7 @@ function renderWelcome(container) {
 
   document.getElementById('skip-onboarding-btn').addEventListener('click', () => {
     onboardingData = {
-      name: 'Aryan Sharma',
+      name: 'Aryan Medigeri',
       city: 'Pune',
       householdSize: 4,
       homeType: 'Apartment',
@@ -522,7 +522,7 @@ function renderReview(container) {
           <div class="review-table">
             <div class="review-row">
               <span class="review-label">Name</span>
-              <input type="text" id="rev-input-name" class="review-value-input" value="${data.name || 'Aryan Sharma'}" style="text-align: right; border: none; background: transparent; width: 180px; font-weight: 600;" />
+              <input type="text" id="rev-input-name" class="review-value-input" value="${data.name || 'Aryan Medigeri'}" style="text-align: right; border: none; background: transparent; width: 180px; font-weight: 600;" />
             </div>
             <div class="review-row">
               <span class="review-label">City</span>
@@ -718,7 +718,7 @@ function renderComplete(container) {
 
   document.getElementById('go-to-dashboard')?.addEventListener('click', () => {
     setOnboardingComplete({
-      name: data.name || 'Aryan Sharma',
+      name: data.name || 'Aryan Medigeri',
       city: data.city || 'Pune',
       state: 'Maharashtra',
       householdSize: data.householdSize,

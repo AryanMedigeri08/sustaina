@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════
 // SUSTAINA — Mock Data for Demo
-// Realistic 30-day data for "Aryan Sharma" in Pune
+// Realistic 30-day data for "Aryan Medigeri" in Pune
 // ═══════════════════════════════════════════
 
 export const DEFAULT_PROFILE = {
-  name: 'Aryan Sharma',
+  name: 'Aryan Medigeri',
   ageGroup: '26-35',
   city: 'Pune',
   state: 'Maharashtra',

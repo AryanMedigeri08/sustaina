@@ -171,7 +171,7 @@ This project is for educational and demonstration purposes.
 
 ## 👤 Author
 
-**Aryan Sharma** — Built with 💚 for a sustainable India.
+**Aryan Medigeri** — Built with 💚 for a sustainable India.
 
 ---
 

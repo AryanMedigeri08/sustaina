@@ -20,7 +20,7 @@ export function renderDashboard(container) {
   const state = getState();
   const isHousehold = state.settings.viewMode === 'household';
   const multiplier = isHousehold ? (profile.householdSize || 4) : 1;
-  const greetingName = isHousehold ? `${profile.name?.split(' ')[1] || 'Sharma'} Household 👪` : (profile.name?.split(' ')[0] || 'there');
+  const greetingName = isHousehold ? `${profile.name?.split(' ')[1] || 'Medigeri'} Household 👪` : (profile.name?.split(' ')[0] || 'there');
 
   // Clone and scale summary
   const summary = {

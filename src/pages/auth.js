@@ -89,7 +89,7 @@ function renderActiveForm() {
         <div id="auth-error-msg" class="text-xs text-danger" style="color: var(--accent-red); font-weight: 600; text-align: center;"></div>
         <div>
           <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Full Name</label>
-          <input type="text" id="auth-name" placeholder="Aryan Sharma" required />
+          <input type="text" id="auth-name" placeholder="Aryan Medigeri" required />
         </div>
         <div>
           <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Email Address</label>
