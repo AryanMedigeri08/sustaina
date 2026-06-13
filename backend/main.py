@@ -5,6 +5,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict
+from dotenv import load_dotenv
+
+# Load environment variables from root .env
+load_dotenv()
 
 app = FastAPI(title="Sustaina V3 API Backend")
 
