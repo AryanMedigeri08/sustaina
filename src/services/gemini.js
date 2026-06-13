@@ -20,6 +20,29 @@ export async function checkBackendHealth() {
 }
 
 /**
+ * Calls FastAPI backend to generate the next onboarding question dynamically.
+ */
+export async function getNextOnboardingQuestion(currentData, history = []) {
+  const isHealthy = await checkBackendHealth();
+  if (isHealthy) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/onboarding-next-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_data: currentData, history })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.question;
+      }
+    } catch (e) {
+      console.warn('Backend onboarding-next-question failed:', e);
+    }
+  }
+  return null;
+}
+
+/**
  * Calls FastAPI backend to extract user profile details from conversational text.
  */
 export async function extractProfileFromVoice(transcript, currentData = {}) {
@@ -144,42 +167,72 @@ export async function updateAIMemory(activities, simulations, goals, memory) {
 
 // ─── Browser Web Speech API Wrappers ─── //
 
-let speechUtterance = null;
+let activeAudio = null;
 
 /**
- * Speaks text using the browser's native SpeechSynthesis (TTS).
+ * Speaks text using the backend Gemini TTS API (gemini-2.0-flash with AUDIO modality).
+ * Falls back to browser SpeechSynthesis if the backend call fails.
  */
-export function speakText(text, onStart = null, onEnd = null) {
-  if (!('speechSynthesis' in window)) {
-    console.warn('SpeechSynthesis is not supported in this browser.');
-    return;
+export async function speakText(text, onStart = null, onEnd = null) {
+  // Cancel any active playback
+  stopSpeaking();
+
+  if (onStart) onStart();
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/speak`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+
+    if (!res.ok) {
+      throw new Error(`Backend speak failed: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    if (data && data.audio) {
+      activeAudio = new Audio("data:audio/wav;base64," + data.audio);
+      if (onEnd) {
+        activeAudio.onended = onEnd;
+        activeAudio.onerror = onEnd;
+      }
+      await activeAudio.play();
+    } else {
+      throw new Error('No audio payload returned from backend.');
+    }
+  } catch (e) {
+    console.warn('Gemini TTS voice generation failed, falling back to local SpeechSynthesis:', e);
+    
+    // Local Synthesis Fallback
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      const voices = window.speechSynthesis.getVoices();
+      const naturalVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Natural')) || voices[0];
+      if (naturalVoice) {
+        utterance.voice = naturalVoice;
+      }
+      utterance.rate = 1.0;
+      utterance.pitch = 1.05;
+      
+      if (onEnd) utterance.onend = onEnd;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      if (onEnd) onEnd();
+    }
   }
-
-  // Stop any active speech
-  window.speechSynthesis.cancel();
-
-  speechUtterance = new SpeechSynthesisUtterance(text);
-  
-  // Find a high-quality, natural-sounding voice if available
-  const voices = window.speechSynthesis.getVoices();
-  const naturalVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Natural')) || voices[0];
-  if (naturalVoice) {
-    speechUtterance.voice = naturalVoice;
-  }
-
-  speechUtterance.rate = 1.0; // natural conversational rate
-  speechUtterance.pitch = 1.05; // slightly warm/friendly tone
-
-  if (onStart) speechUtterance.onstart = onStart;
-  if (onEnd) speechUtterance.onend = onEnd;
-
-  window.speechSynthesis.speak(speechUtterance);
 }
 
 /**
- * Cancels any ongoing text-to-speech voice playback.
+ * Cancels any ongoing voice playback (both Audio element and local SpeechSynthesis).
  */
 export function stopSpeaking() {
+  if (activeAudio) {
+    activeAudio.pause();
+    activeAudio = null;
+  }
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }

@@ -12,7 +12,8 @@ import {
   initSpeechRecognition, 
   speakText, 
   stopSpeaking, 
-  extractProfileFromVoice 
+  extractProfileFromVoice,
+  getNextOnboardingQuestion
 } from '../services/gemini.js';
 
 // ─── Step Definitions ─── //
@@ -57,6 +58,7 @@ let isAryaSpeaking = false;
 let isListening = false;
 let conversationHistory = [];
 let pendingExtraction = false;
+let pendingQuestion = false;
 
 // ─── Render Onboarding ─── //
 export function renderOnboarding(container) {
@@ -180,6 +182,8 @@ function renderWelcome(container) {
 
   document.getElementById('start-onboarding').addEventListener('click', () => {
     currentStep = 1;
+    conversationHistory = [];
+    pendingQuestion = false;
     renderOnboarding(container);
   });
 
@@ -365,29 +369,66 @@ function updateVisualChecklist() {
 /**
  * Dialog State Machine. Chooses next question and speaks it.
  */
-function runConversationStep(container) {
+async function runConversationStep(container) {
+  if (pendingQuestion) return;
+  pendingQuestion = true;
+
+  // Show thinking status
+  const speechTextEl = document.getElementById('arya-speech-text');
+  if (speechTextEl) {
+    speechTextEl.textContent = "Arya is thinking...";
+  }
+  const waveformEl = document.getElementById('onboarding-waveform');
+  if (waveformEl) {
+    waveformEl.style.opacity = '0.5';
+  }
+
   let question = '';
-  
-  if (!onboardingData.name || !onboardingData.city) {
-    question = "Hello! I am Arya. Let's get to know you. What is your name, and which city do you live in?";
-  } else if (!onboardingData.primaryTransport || !onboardingData.dailyTransportKm) {
-    question = `Nice to meet you, ${onboardingData.name.split(' ')[0]}! Next, how do you usually travel to work or college, and what is your daily commute distance in kilometers?`;
-  } else if (!onboardingData.diet) {
-    question = "Got it! How would you describe your daily diet? Are you vegetarian, vegan, or non-vegetarian?";
-  } else if (!onboardingData.householdSize || !onboardingData.electricityUnits) {
-    question = "Understood. Finally, how many people live in your household, and what is your average monthly electricity usage in units?";
-  } else {
-    // Everything extracted!
+  try {
+    question = await getNextOnboardingQuestion(onboardingData, conversationHistory);
+  } catch (err) {
+    console.warn("Failed to get next onboarding question from Gemini:", err);
+  }
+
+  // Local fallback if backend is down or returned null
+  if (!question) {
+    if (!onboardingData.name || !onboardingData.city) {
+      question = "Hello! I am Arya. Let's get to know you. What is your name, and which city do you live in?";
+    } else if (!onboardingData.primaryTransport || !onboardingData.dailyTransportKm) {
+      question = `Nice to meet you, ${onboardingData.name.split(' ')[0]}! Next, how do you usually travel to work or college, and what is your daily commute distance in kilometers?`;
+    } else if (!onboardingData.diet) {
+      question = "Got it! How would you describe your daily diet? Are you vegetarian, vegan, or non-vegetarian?";
+    } else if (!onboardingData.householdSize || !onboardingData.electricityUnits) {
+      question = "Understood. Finally, how many people live in your household, and what is your average monthly electricity usage in units?";
+    } else {
+      question = "Perfect! I have extracted all your details. Let's review them together now.";
+    }
+  }
+
+  pendingQuestion = false;
+
+  const isCompleted = question.includes("Perfect! I have extracted all your details") || 
+    (onboardingData.name && onboardingData.city && onboardingData.primaryTransport && 
+     onboardingData.dailyTransportKm && onboardingData.diet && 
+     onboardingData.householdSize && onboardingData.electricityUnits);
+
+  if (isCompleted) {
+    // Force the standard final question
     question = "Perfect! I have extracted all your details. Let's review them together now.";
+    conversationHistory.push(`Arya: ${question}`);
+
     speakText(question, 
       () => {
         isAryaSpeaking = true;
-        document.getElementById('arya-speech-text').textContent = question;
-        document.getElementById('onboarding-waveform').style.opacity = '1';
+        const speechEl = document.getElementById('arya-speech-text');
+        if (speechEl) speechEl.textContent = question;
+        const waveEl = document.getElementById('onboarding-waveform');
+        if (waveEl) waveEl.style.opacity = '1';
       }, 
       () => {
         isAryaSpeaking = false;
-        document.getElementById('onboarding-waveform').style.opacity = '0.2';
+        const waveEl = document.getElementById('onboarding-waveform');
+        if (waveEl) waveEl.style.opacity = '0.2';
         currentStep = 2; // Move to Review
         renderOnboarding(container);
       }
@@ -395,16 +436,21 @@ function runConversationStep(container) {
     return;
   }
 
+  conversationHistory.push(`Arya: ${question}`);
+
   // Speak the question
   speakText(question, 
     () => {
       isAryaSpeaking = true;
-      document.getElementById('arya-speech-text').textContent = question;
-      document.getElementById('onboarding-waveform').style.opacity = '1';
+      const speechEl = document.getElementById('arya-speech-text');
+      if (speechEl) speechEl.textContent = question;
+      const waveEl = document.getElementById('onboarding-waveform');
+      if (waveEl) waveEl.style.opacity = '1';
     },
     () => {
       isAryaSpeaking = false;
-      document.getElementById('onboarding-waveform').style.opacity = '0.2';
+      const waveEl = document.getElementById('onboarding-waveform');
+      if (waveEl) waveEl.style.opacity = '0.2';
       // Auto-start recording after question ends
       startListening(container);
     }
@@ -467,6 +513,8 @@ function stopListening() {
 
 async function handleUserSpeechSubmit(container, text) {
   if (!text.trim() || pendingExtraction) return;
+
+  conversationHistory.push(`User: ${text}`);
 
   pendingExtraction = true;
   const statusLabel = document.getElementById('transcript-header');
@@ -573,6 +621,8 @@ function renderReview(container) {
 
   document.getElementById('review-back')?.addEventListener('click', () => {
     currentStep = 1; // back to chat
+    conversationHistory = [];
+    pendingQuestion = false;
     renderOnboarding(container);
   });
 

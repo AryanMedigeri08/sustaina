@@ -23,8 +23,34 @@ app.add_middleware(
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
+def pcm_to_wav(pcm_data: bytes, sample_rate: int = 24000, channels: int = 1, bit_depth: int = 16) -> bytes:
+    """Prepends a 44-byte WAV header to raw PCM bytes."""
+    num_samples = len(pcm_data)
+    block_align = channels * (bit_depth // 8)
+    byte_rate = sample_rate * block_align
+    
+    header = bytearray(44)
+    # RIFF header
+    header[0:4] = b'RIFF'
+    header[4:8] = (36 + num_samples).to_bytes(4, 'little')
+    header[8:12] = b'WAVE'
+    # "fmt " subchunk
+    header[12:16] = b'fmt '
+    header[16:20] = (16).to_bytes(4, 'little') # subchunk1size (16 for PCM)
+    header[20:22] = (1).to_bytes(2, 'little')  # audio format (1 for PCM)
+    header[22:24] = channels.to_bytes(2, 'little')
+    header[24:28] = sample_rate.to_bytes(4, 'little')
+    header[28:32] = byte_rate.to_bytes(4, 'little')
+    header[32:34] = block_align.to_bytes(2, 'little')
+    header[34:36] = bit_depth.to_bytes(2, 'little')
+    # "data" subchunk
+    header[36:40] = b'data'
+    header[40:44] = num_samples.to_bytes(4, 'little')
+    
+    return bytes(header) + pcm_data
+
 def call_gemini_flash(prompt: str, system_instruction: str = None) -> dict:
-    """Helper function to call Gemini 1.5 Flash via REST API."""
+    """Helper function to call Gemini via REST API with fallback support."""
     api_key = GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
         raise HTTPException(
@@ -32,51 +58,56 @@ def call_gemini_flash(prompt: str, system_instruction: str = None) -> dict:
             detail="GEMINI_API_KEY is not configured on the server."
         )
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    models_to_try = [
+        "gemini-2.5-flash",
+        "gemini-flash-latest",
+        "gemini-3.1-flash-lite"
+    ]
     
-    payload = {
-        "contents": [
-            {
-                "parts": [
-                    {"text": prompt}
-                ]
+    last_error = ""
+    for model_name in models_to_try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+        
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt}
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "responseMimeType": "application/json"
             }
-        ],
-        "generationConfig": {
-            "responseMimeType": "application/json"
-        }
-    }
-    
-    if system_instruction:
-        payload["systemInstruction"] = {
-            "parts": [
-                {"text": system_instruction}
-            ]
         }
         
-    try:
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST"
-        )
-        with urllib.request.urlopen(req) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
+        if system_instruction:
+            payload["systemInstruction"] = {
+                "parts": [
+                    {"text": system_instruction}
+                ]
+            }
             
-            # Extract candidate text
-            candidate = res_data.get("candidates", [{}])[0]
-            text = candidate.get("content", {}).get("parts", [{}])[0].get("text", "")
+        try:
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+            with urllib.request.urlopen(req) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                candidate = res_data.get("candidates", [{}])[0]
+                text = candidate.get("content", {}).get("parts", [{}])[0].get("text", "")
+                return json.loads(text.strip())
+        except urllib.error.HTTPError as e:
+            last_error = e.read().decode("utf-8")
+            print(f"Gemini API Error with model {model_name}: {last_error}")
+        except Exception as e:
+            last_error = str(e)
+            print(f"Server Error with model {model_name} during Gemini Call: {last_error}")
             
-            # Return parsed JSON content
-            return json.loads(text.strip())
-    except urllib.error.HTTPError as e:
-        error_msg = e.read().decode("utf-8")
-        print(f"Gemini API Error: {error_msg}")
-        raise HTTPException(status_code=e.code, detail=f"Gemini API call failed: {error_msg}")
-    except Exception as e:
-        print(f"Server Error during Gemini Call: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to communicate with Gemini: {str(e)}")
+    raise HTTPException(status_code=500, detail=f"All Gemini text models failed. Last error: {last_error}")
 
 
 # ─── Pydantic Models for Requests ─── #
@@ -112,6 +143,13 @@ class UpdateMemoryRequest(BaseModel):
     simulations: list
     goals: list
     memory: dict
+
+class SpeakRequest(BaseModel):
+    text: str
+
+class OnboardingNextQuestionRequest(BaseModel):
+    current_data: dict
+    history: List[str] = []
 
 
 # ─── API Endpoints ─── #
@@ -158,6 +196,33 @@ def extract_profile(req: OnboardingExtractionRequest):
         f"Extract and return updated parameters in the Response Schema JSON format."
     )
     
+    return call_gemini_flash(prompt, system_prompt)
+
+@app.post("/api/onboarding-next-question")
+def onboarding_next_question(req: OnboardingNextQuestionRequest):
+    system_prompt = (
+        "You are Arya, the warm AI sustainability coach for Sustaina. Your goal is to guide the user through onboarding "
+        "by asking them questions to collect their profile details in a natural, friendly, conversational manner.\n"
+        "Here are the fields you need to collect:\n"
+        "- Name\n"
+        "- City in India\n"
+        "- Primary transport mode and daily commute distance in km\n"
+        "- Diet type (vegan, vegetarian, non-vegetarian)\n"
+        "- Household size and average monthly electricity units (kWh)\n\n"
+        "Current profile state:\n"
+        f"{json.dumps(req.current_data)}\n\n"
+        "Conversation history so far:\n"
+        f"{json.dumps(req.history)}\n\n"
+        "Identify the next missing field or group of fields and formulate a natural, short, and friendly follow-up question. "
+        "Keep it conversational (e.g., greet them, react briefly to what they already said, and ask the next question). "
+        "Do not ask for more than one or two details at a time. "
+        "If all details are successfully collected, output exactly: 'Perfect! I have extracted all your details. Let\'s review them together now.'\n"
+        "Format the output EXACTLY in the following JSON schema:\n"
+        "{\n"
+        "  \"question\": \"string (the question to speak to the user)\"\n"
+        "}"
+    )
+    prompt = "Generate the next question based on the missing information and conversation history."
     return call_gemini_flash(prompt, system_prompt)
 
 @app.post("/api/coach-recommendations")
@@ -320,6 +385,87 @@ def update_memory(req: UpdateMemoryRequest):
     )
     
     return call_gemini_flash(prompt, system_prompt)
+
+@app.post("/api/speak")
+def speak(req: SpeakRequest):
+    api_key = GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        raise HTTPException(
+            status_code=500, 
+            detail="GEMINI_API_KEY is not configured on the server."
+        )
+    
+    models_to_try = [
+        "gemini-2.5-flash-preview-tts",
+        "gemini-3.1-flash-tts-preview"
+    ]
+    
+    last_error = ""
+    for model_name in models_to_try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": req.text}
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "responseModalities": ["AUDIO"],
+                "speechConfig": {
+                    "voiceConfig": {
+                        "prebuiltVoiceConfig": {
+                            "voiceName": "Aoede" # friendly female voice
+                        }
+                    }
+                }
+            }
+        }
+        
+        try:
+            import base64
+            req_obj = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+            with urllib.request.urlopen(req_obj) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                candidate = res_data.get("candidates", [{}])[0]
+                parts = candidate.get("content", {}).get("parts", [])
+                
+                pcm_base64 = ""
+                for part in parts:
+                    if "inlineData" in part:
+                        inline = part["inlineData"]
+                        if inline.get("mimeType", "").startswith("audio/"):
+                            pcm_base64 = inline.get("data", "")
+                            break
+                
+                if not pcm_base64:
+                    continue
+                
+                # Decode PCM base64
+                pcm_data = base64.b64decode(pcm_base64)
+                
+                # Convert PCM to WAV
+                wav_data = pcm_to_wav(pcm_data, sample_rate=24000)
+                
+                # Re-encode to base64
+                wav_base64 = base64.b64encode(wav_data).decode("utf-8")
+                
+                return {"audio": wav_base64}
+                
+        except urllib.error.HTTPError as e:
+            last_error = e.read().decode("utf-8")
+            print(f"Gemini TTS Error with model {model_name}: {last_error}")
+        except Exception as e:
+            last_error = str(e)
+            print(f"Server Error with model {model_name} during Gemini TTS: {last_error}")
+            
+    raise HTTPException(status_code=500, detail=f"All Gemini TTS models failed. Last error: {last_error}")
 
 if __name__ == "__main__":
     import uvicorn
