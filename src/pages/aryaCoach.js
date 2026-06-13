@@ -6,6 +6,7 @@
 import { getProfile, getActivities, getMemory, acceptSuggestion, ignoreSuggestion } from '../state/store.js';
 import { getCoachRecommendations } from '../services/gemini.js';
 import { navigate } from '../router.js';
+import aryaLogo from '../assets/arya_logo.jpg';
 
 function createProgressRing(pct, size = 100) {
   const r = (size - 10) / 2;
@@ -30,7 +31,8 @@ export function renderAryaCoach(container) {
   // Show Loading Spinner / skeleton state
   container.innerHTML = `
     <div class="page-enter">
-      <div class="page-header">
+      <div class="page-header" style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6);">
+        <img src="${aryaLogo}" alt="Arya Logo" style="width: 56px; height: 56px; border-radius: var(--radius-full); object-fit: cover; border: 2px solid var(--green-600); box-shadow: var(--shadow-sm); flex-shrink: 0;" />
         <div>
           <h1 class="page-title">Arya Coach</h1>
           <p class="page-subtitle">Personalized recommendations by Arya</p>
@@ -51,7 +53,8 @@ export function renderAryaCoach(container) {
   getCoachRecommendations(profile, activities, memory).then(data => {
     container.innerHTML = `
       <div class="page-enter">
-        <div class="page-header">
+        <div class="page-header" style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6);">
+          <img src="${aryaLogo}" alt="Arya Logo" style="width: 56px; height: 56px; border-radius: var(--radius-full); object-fit: cover; border: 2px solid var(--green-600); box-shadow: var(--shadow-sm); flex-shrink: 0;" />
           <div>
             <h1 class="page-title">Arya Coach</h1>
             <p class="page-subtitle">Personalized recommendations by Arya</p>

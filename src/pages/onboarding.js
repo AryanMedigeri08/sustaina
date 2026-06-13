@@ -5,6 +5,7 @@
 
 import { setOnboardingComplete, logTimelineEvent, getState } from '../state/store.js';
 import { icons } from '../components/icons.js';
+import sustainaLogo from '../assets/sustaina_logo.png';
 import { navigate } from '../router.js';
 import { calcAnnualEmissions, calcTreesEquivalent, calcMoneySaved } from '../data/emissions.js';
 import { 
@@ -130,11 +131,9 @@ function renderWelcome(container) {
   container.innerHTML = `
     <div class="onboarding-container page-enter">
       <div class="onboarding-sidebar">
-        <div class="sidebar-logo" style="margin-bottom: var(--space-6);">
-          <div class="sidebar-logo-icon">🌱</div>
-          <h1 style="font-size: var(--text-xl); font-weight: 700; color: var(--green-800);">Sustaina</h1>
+        <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
+          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
         </div>
-        <p class="text-xs text-secondary" style="margin-bottom: var(--space-8);">Your AI Sustainability Companion</p>
         <div style="opacity: 0.3; pointer-events: none;">
           <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4);"><span>🏠</span> <span>Home</span></div>
           <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4);"><span>📝</span> <span>Activity Log</span></div>
@@ -207,9 +206,8 @@ function renderConversation(container) {
   container.innerHTML = `
     <div class="onboarding-container page-enter">
       <div class="onboarding-sidebar">
-        <div class="sidebar-logo" style="margin-bottom: var(--space-6);">
-          <div class="sidebar-logo-icon">🌱</div>
-          <h1 style="font-size: var(--text-xl); font-weight: 700; color: var(--green-800);">Sustaina</h1>
+        <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
+          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
         </div>
         
         <!-- Checklist panel -->
@@ -504,11 +502,9 @@ function renderReview(container) {
   container.innerHTML = `
     <div class="onboarding-container page-enter">
       <div class="onboarding-sidebar">
-        <div class="sidebar-logo" style="margin-bottom: var(--space-6);">
-          <div class="sidebar-logo-icon">🌱</div>
-          <h1 style="font-size: var(--text-xl); font-weight: 700; color: var(--green-800);">Sustaina</h1>
+        <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
+          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
         </div>
-        <p class="text-xs text-secondary" style="margin-bottom: var(--space-8);">Your AI Sustainability Companion</p>
       </div>
 
       <div class="onboarding-main">
@@ -598,11 +594,9 @@ function renderGoalsSelection(container) {
   container.innerHTML = `
     <div class="onboarding-container page-enter">
       <div class="onboarding-sidebar">
-        <div class="sidebar-logo" style="margin-bottom: var(--space-6);">
-          <div class="sidebar-logo-icon">🌱</div>
-          <h1 style="font-size: var(--text-xl); font-weight: 700; color: var(--green-800);">Sustaina</h1>
+        <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
+          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
         </div>
-        <p class="text-xs text-secondary" style="margin-bottom: var(--space-8);">Your AI Sustainability Companion</p>
       </div>
 
       <div class="onboarding-main">
@@ -675,11 +669,9 @@ function renderComplete(container) {
   container.innerHTML = `
     <div class="onboarding-container page-enter">
       <div class="onboarding-sidebar">
-        <div class="sidebar-logo" style="margin-bottom: var(--space-6);">
-          <div class="sidebar-logo-icon">🌱</div>
-          <h1 style="font-size: var(--text-xl); font-weight: 700; color: var(--green-800);">Sustaina</h1>
+        <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
+          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
         </div>
-        <p class="text-xs text-secondary" style="margin-bottom: var(--space-8);">Your AI Sustainability Companion</p>
       </div>
 
       <div class="onboarding-main">

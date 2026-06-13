@@ -5,6 +5,7 @@
 import { icons } from './icons.js';
 import { getProfile } from '../state/store.js';
 import { navigate, getCurrentRoute } from '../router.js';
+import sustainaLogo from '../assets/sustaina_logo.png';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home', icon: 'home', route: 'home' },
@@ -31,11 +32,9 @@ export function renderSidebar(container) {
 
   container.innerHTML = `
     <nav class="sidebar" id="sidebar">
-      <div class="sidebar-logo">
-        <div class="sidebar-logo-icon">🌱</div>
-        <h1>Sustaina</h1>
+      <div class="sidebar-brand" style="padding: 0 var(--space-6); margin-top: var(--space-4); margin-bottom: var(--space-6);">
+        <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
       </div>
-      <p class="sidebar-logo-tagline">Your AI Sustainability Companion</p>
 
       <div class="sidebar-user">
         <div class="sidebar-user-avatar">${initials}</div>

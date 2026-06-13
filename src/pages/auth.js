@@ -6,6 +6,7 @@ import { signInUser, signUpUser, resetUserPassword } from '../services/supabase.
 import { setState, getProfile, getActivities, getGoals, getMemory } from '../state/store.js';
 import { navigate } from '../router.js';
 import { icons } from '../components/icons.js';
+import sustainaLogo from '../assets/sustaina_logo.png';
 
 let activeTab = 'login'; // 'login' or 'signup' or 'reset'
 
@@ -31,9 +32,7 @@ function renderAuthShell(container) {
         
         <!-- Logo Header -->
         <div style="text-align: center; margin-bottom: var(--space-6);">
-          <div style="width: 48px; height: 48px; background: var(--green-800); border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin-bottom: var(--space-2);">🌱</div>
-          <h1 style="font-family: var(--font-heading); font-size: var(--text-2xl); font-weight: 800; color: var(--green-800);">Sustaina</h1>
-          <p class="text-xs text-secondary" style="margin-top: 2px;">Your AI Sustainability Companion</p>
+          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 70px; object-fit: contain; margin: 0 auto; display: block;" />
         </div>
 
         <!-- Form Box -->
