@@ -25,14 +25,14 @@ const STEPS = [
 ];
 
 const GOAL_OPTIONS = [
-  { icon: '🌍', text: 'Reduce my carbon footprint', value: 'reduce_footprint' },
-  { icon: '💰', text: 'Save money on monthly bills', value: 'save_money' },
-  { icon: '🚌', text: 'Use public transport more', value: 'public_transport' },
-  { icon: '🥗', text: 'Eat more sustainably', value: 'eat_sustainable' },
-  { icon: '♻️', text: 'Reduce waste', value: 'reduce_waste' },
-  { icon: '🌿', text: 'Live a more minimal lifestyle', value: 'minimal_lifestyle' },
-  { icon: '⚡', text: 'Switch to clean energy', value: 'clean_energy' },
-  { icon: '🌳', text: 'Plant more trees', value: 'plant_trees' },
+  { icon: 'globe', text: 'Reduce my carbon footprint', value: 'reduce_footprint' },
+  { icon: 'money', text: 'Save money on monthly bills', value: 'save_money' },
+  { icon: 'transport', text: 'Use public transport more', value: 'public_transport' },
+  { icon: 'food', text: 'Eat more sustainably', value: 'eat_sustainable' },
+  { icon: 'waste', text: 'Reduce waste', value: 'reduce_waste' },
+  { icon: 'leaf', text: 'Live a more minimal lifestyle', value: 'minimal_lifestyle' },
+  { icon: 'energy', text: 'Switch to clean energy', value: 'clean_energy' },
+  { icon: 'tree', text: 'Plant more trees', value: 'plant_trees' },
 ];
 
 let currentStep = 0;
@@ -134,36 +134,38 @@ function renderWelcome(container) {
         <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
           <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
         </div>
-        <div style="opacity: 0.3; pointer-events: none;">
-          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4);"><span>🏠</span> <span>Home</span></div>
-          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4);"><span>📝</span> <span>Activity Log</span></div>
-          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4);"><span>🤖</span> <span>Arya Coach</span></div>
-          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4);"><span>📊</span> <span>Insights</span></div>
+        <div style="opacity: 0.3; pointer-events: none; display: flex; flex-direction: column; gap: var(--space-2);">
+          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4); display: flex; gap: var(--space-2); align-items: center;">${icons.home} <span>Home</span></div>
+          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4); display: flex; gap: var(--space-2); align-items: center;">${icons.activity} <span>Activity Log</span></div>
+          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4); display: flex; gap: var(--space-2); align-items: center;">${icons.coach} <span>Arya Coach</span></div>
+          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4); display: flex; gap: var(--space-2); align-items: center;">${icons.insights} <span>Insights</span></div>
         </div>
       </div>
 
       <div class="onboarding-main">
         <div class="onboarding-content">
-          <h2 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">Welcome to Sustaina 🌿</h2>
+          <h2 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">Welcome to Sustaina</h2>
           <p class="text-secondary mb-8">Set up your profile conversationally with Arya, your AI voice companion.</p>
 
           <div class="pulse-ring">
-            <div class="pulse-inner">
-              <span style="font-size: 40px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));">🍃</span>
+            <div class="pulse-inner" style="display: flex; align-items: center; justify-content: center;">
+              <span style="display: flex; align-items: center; justify-content: center; color: var(--green-600); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));">
+                ${icons.leaf.replace('width="20" height="20"', 'width="40" height="40"')}
+              </span>
             </div>
           </div>
 
           <div style="max-width: 400px; margin: 0 auto; text-align: left;" class="card mb-8">
             <h4 style="margin-bottom: var(--space-3); font-weight: 700;">How it works:</h4>
             <div style="display: flex; flex-direction: column; gap: var(--space-3); font-size: var(--text-sm);">
-              <div style="display: flex; gap: var(--space-2);"><span>🎙️</span> <span>Speak naturally in English to Arya.</span></div>
-              <div style="display: flex; gap: var(--space-2);"><span>⚡</span> <span>Gemini extracts details (Name, City, Diet, etc.) automatically.</span></div>
-              <div style="display: flex; gap: var(--space-2);"><span>📝</span> <span>You can edit or type anything at the end.</span></div>
+              <div style="display: flex; gap: var(--space-2); align-items: center;"><span style="color: var(--green-600); display: flex;">${icons.mic.replace('width="28" height="28"', 'width="16" height="16"')}</span> <span>Speak naturally in English to Arya.</span></div>
+              <div style="display: flex; gap: var(--space-2); align-items: center;"><span style="color: var(--accent-amber); display: flex;">${icons.energy.replace('width="20" height="20"', 'width="16" height="16"')}</span> <span>Gemini extracts details (Name, City, Diet, etc.) automatically.</span></div>
+              <div style="display: flex; gap: var(--space-2); align-items: center;"><span style="color: var(--green-600); display: flex;">${icons.edit.replace('width="16" height="16"', 'width="16" height="16"')}</span> <span>You can edit or type anything at the end.</span></div>
             </div>
           </div>
 
-          <button class="btn btn-primary btn-xl" id="start-onboarding" style="max-width: 400px; margin: 0 auto;">
-            🎙️ Start Voice Onboarding
+          <button class="btn btn-primary btn-xl" id="start-onboarding" style="max-width: 400px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: var(--space-2);">
+            ${icons.mic.replace('width="28" height="28"', 'width="20" height="20"')} Start Voice Onboarding
           </button>
           
           <div class="text-center mt-4">
@@ -610,7 +612,7 @@ function renderGoalsSelection(container) {
           <div class="goals-grid">
             ${GOAL_OPTIONS.map(goal => `
               <div class="goal-option ${onboardingData.goals.includes(goal.value) ? 'selected' : ''}" data-value="${goal.value}">
-                <div class="goal-option-icon">${goal.icon}</div>
+                <div class="goal-option-icon" style="color: var(--green-700); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;">${icons[goal.icon]}</div>
                 <span class="goal-option-text">${goal.text}</span>
               </div>
             `).join('')}

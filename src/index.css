@@ -1041,11 +1041,16 @@ input:focus, select:focus, textarea:focus {
   flex-shrink: 0;
 }
 
-.activity-icon.transport { background: var(--green-100); }
-.activity-icon.food { background: #fef3d0; }
-.activity-icon.energy { background: #e3f0ff; }
-.activity-icon.shopping { background: #fce7f3; }
-.activity-icon.waste { background: var(--neutral-100); }
+.activity-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.activity-icon.transport { background: var(--green-100); color: var(--green-800); }
+.activity-icon.food { background: #fef3d0; color: #b45309; }
+.activity-icon.energy { background: #e3f0ff; color: #1d4ed8; }
+.activity-icon.shopping { background: #fce7f3; color: #be185d; }
+.activity-icon.waste { background: var(--neutral-100); color: var(--neutral-700); }
 
 .activity-info {
   flex: 1;

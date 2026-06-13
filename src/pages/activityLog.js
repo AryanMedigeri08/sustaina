@@ -49,7 +49,7 @@ export function renderActivityLog(container) {
         <div class="quick-add-grid">
           ${QUICK_ADD.map(item => `
             <div class="quick-add-item" data-quick="${item.label}">
-              <span class="quick-add-icon">${item.icon}</span>
+              <span class="quick-add-icon" style="display: flex; align-items: center; justify-content: center; color: var(--green-700);">${icons.transport}</span>
               <span class="quick-add-label">${item.label}</span>
             </div>
           `).join('')}
@@ -63,7 +63,7 @@ export function renderActivityLog(container) {
           ${filtered.map(activity => `
             <div class="activity-item">
               <div class="activity-icon ${activity.category}">
-                ${activity.icon}
+                ${icons[activity.category] || icons.reports}
               </div>
               <div class="activity-info">
                 <div class="activity-name">${activity.name}</div>

@@ -16,7 +16,7 @@ const TEMPLATES = [
     runningCost: 0,
     energyUsage: -3600, // generates 3600 units
     expectedLifetime: 25,
-    icon: '☀️'
+    icon: 'sun'
   },
   {
     name: 'Ola S1 Pro Electric Scooter',
@@ -25,7 +25,7 @@ const TEMPLATES = [
     runningCost: 250, // Charging costs/mo
     energyUsage: 350, // kWh/year
     expectedLifetime: 10,
-    icon: '🛵'
+    icon: 'transport'
   },
   {
     name: 'LG 5-Star Inverter Refrigerator',
@@ -34,7 +34,7 @@ const TEMPLATES = [
     runningCost: 180, // electricity bill/mo
     energyUsage: 220, // kWh/year
     expectedLifetime: 12,
-    icon: '❄️'
+    icon: 'snowflake'
   }
 ];
 
@@ -60,8 +60,8 @@ export function renderSmartPurchaseAdvisor(container) {
             <label class="text-xs text-secondary font-semibold mb-2 style-block">Quick Templates</label>
             <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
               ${TEMPLATES.map((tmpl, idx) => `
-                <button class="btn btn-ghost btn-sm btn-tmpl" data-idx="${idx}" style="padding: var(--space-2) var(--space-3); font-size: var(--text-xs); display: flex; align-items: center; gap: 4px;">
-                  <span>${tmpl.icon}</span> <span>${tmpl.name.split(' ')[0]}</span>
+                <button class="btn btn-ghost btn-sm btn-tmpl" data-idx="${idx}" style="padding: var(--space-2) var(--space-3); font-size: var(--text-xs); display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="display: flex; align-items: center; justify-content: center; color: var(--green-700);">${icons[tmpl.icon]}</span> <span>${tmpl.name.split(' ')[0]}</span>
                 </button>
               `).join('')}
             </div>
@@ -236,8 +236,13 @@ async function runAnalysis(container) {
         <div class="text-xs" style="opacity: 0.8; font-weight: 600;">Arya's Recommendation</div>
         <div style="font-family: var(--font-heading); font-size: var(--text-2xl); font-weight: 800;">${advice.recommendation}</div>
       </div>
-      <div style="font-size: 28px;">
-        ${advice.recommendation === 'Yes' ? '✅' : advice.recommendation === 'No' ? '❌' : '⚠️'}
+      <div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        ${advice.recommendation === 'Yes' ? 
+          icons.check.replace('width="60" height="60"', 'width="28" height="28"').replace('stroke="currentColor"', 'stroke="currentColor" style="color: var(--green-700);"') : 
+          advice.recommendation === 'No' ? 
+          icons.close.replace('width="20" height="20"', 'width="28" height="28"').replace('stroke="currentColor"', 'stroke="currentColor" style="color: var(--accent-red);"') : 
+          `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-amber);"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12" y1="17" y2="17"/></svg>`
+        }
       </div>
     </div>
 
