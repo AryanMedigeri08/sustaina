@@ -1,178 +1,166 @@
-# 🌱 Sustaina — Your AI Sustainability Companion (V3)
+# Sustaina: AI-Powered Personal Carbon Footprint Tracker and Coach
 
-**India's most intelligent personal carbon footprint tracker**, powered by **Arya**, your AI sustainability coach.
-
-Track your daily carbon emissions, get personalized recommendations, simulate future improvements, and build long-term sustainable habits with secure cloud syncing and AI intelligence.
+Sustaina is an intelligent, India-centric personal carbon footprint tracking application designed to help users build sustainable habits. Powered by Arya, an integrated AI sustainability coach, the application offers personalized insights, habit logging, future footprint simulations, and monthly reports with secure cloud synchronization.
 
 ---
 
-## ✨ Features (V3)
+## Features
 
-### 👥 Conversational Timeline Progress Narrative
-- **Arya Timeline (`src/pages/timeline.js`)**: A vertical chronologically connected milestones narrative.
-- **Automatic Milestone Logging**: Automatically logs events when onboarding is completed, carbon twin scenarios are saved, or purchase advisor decisions are evaluated.
+### Conversational Voice Onboarding
+- **Context-Aware Dialogue**: Conducts conversational onboarding using a backend next-question generator powered by Gemini models.
+- **Multimodal Text-to-Speech (TTS)**: Synthesizes high-quality spoken audio from Arya via Gemini's `v1beta` voice models (with local browser `SpeechSynthesis` fallback).
+- **Automated Parameter Extraction**: Extracts profile parameters (Name, City, Diet, Commute, Electricity) directly from conversation transcripts using structured JSON generation.
 
-### 👪 Household Mode & Dynamic Aggregation
-- **Topbar Switch (`src/components/topbar.js`)**: Toggle between Personal View and Household View.
-- **Dynamic Scaling (`src/pages/dashboard.js`)**: When in Household View, emissions, savings, trees equivalents, trend graphs, and sector breakdowns scale dynamically based on household size and shared efficiency calculations.
+### Household Mode and Dynamic Scaling
+- **Aggregated Analytics**: Supports switching between Personal and Household modes.
+- **Dynamic Calculation**: Scales yearly emissions, monetary savings, tree equivalents, and sector breakdowns dynamically based on household size and shared efficiency calculations.
 
-### 🛡️ Supabase Auth & Cloud Database Sync
-- **Secure Authentication (`src/pages/auth.js`)**: Create accounts, log in, reset passwords, or continue as Guest.
-- **Auto Data Migration (`src/state/store.js`)**: When a guest signs up or logs in for the first time, all local `localStorage` guest data (activities, goals, simulations, timeline) is automatically migrated to the Supabase cloud database.
+### Supabase Cloud Synchronization and Guest Mode
+- **Secure Authentication**: Includes an authentication system supporting login, registration, password recovery, and Guest Mode.
+- **Automatic Migration**: Migrates all local data (`localStorage`) seamlessly to Supabase PostgreSQL tables upon a user's first login.
 
-### 📋 Monthly AI Reports
-- **AI Report Generator (`src/pages/reports.js`)**: Generates reports via FastAPI using Gemini Flash JSON schemas.
-- **Export Formats**: Support print-to-PDF page-break overrides and HTML5 Canvas summary cards exported to PNG.
+### Analytics and Future Simulations
+- **Carbon Twin Simulations**: Allows users to simulate lifestyle changes (e.g., swapping vehicle commutes for public transit or switching to solar energy) and compare committed scenarios side-by-side.
+- **Interactive Graphs**: Visualizes weekly and monthly footprint trends using Chart.js charts.
+- **Smart Purchase Advisor**: Evaluates the ecological and financial payback period of major sustainability investments (e.g., electric two-wheelers, solar panels).
 
-### 📈 Analytics Dashboard
-- **Analytics View (`src/pages/analytics.js`)**: Displays interactive Chart.js line and bar graphs highlighting weekly/monthly footprint trends, success rates, and category changes.
-
-### 🌍 Carbon Twin™ History
-- **Simulations Table (`src/pages/simulationHistory.js`)**: Saves all committed Future Twin lifestyle scenarios.
-- **Comparison Tool**: Select any two scenarios for side-by-side payback and CO₂ comparisons.
-
-### 🛍️ Smart Purchase Advisor payback Persistence
-- **Advisor History (`src/pages/smartPurchaseAdvisor.js`)**: Analyzes financial/carbon payback (e.g. electric scooter, solar panels) via Gemini and persists results to user history.
-
-### 🔔 Notification Center
-- **Bell Dropdown (`src/pages/notifications.js`)**: Quick notification alerts and read/unread updates in the Topbar.
-- **Notifications Page**: Displays historical notifications and settings toggles.
-
-### 🤖 Arya Coach & Advanced Memory
-- **Coaching (`src/pages/aryaCoach.js`)**: Recommends four action cards (Biggest Impact, Cheapest, Easy Win, Challenge).
-- **Preference Extraction (`backend/main.py`)**: Uses FastAPI `/api/update-memory` endpoint to extract behavioral traits (e.g. budget-sensitive, solar-interested) and adjusts recommendations accordingly.
-- **Offline Fallback**: Automatically falls back to local client-side rule-based parsing and generation if the FastAPI server has no configured API key.
+### Monthly Reports and Notifications
+- **AI Report Generator**: Compiles detailed monthly, weekly, or quarterly summaries highlighting accomplishments, emission statistics, and next month's focus plan.
+- **Flexible Export**: Features print-optimized layout styling for PDF downloads and an HTML5 Canvas-based summary card exporter for PNG shares.
+- **Notification Center**: Houses alert notification preferences and feeds, accessible via a topbar bell dropdown.
 
 ---
 
-## 🛠️ Tech Stack
+## Technical Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Build** | [Vite](https://vitejs.dev/) |
-| **Frontend** | Vanilla JavaScript (ES Modules), HTML5 Canvas |
-| **Styling** | Vanilla CSS (with responsive grid and custom properties) |
-| **Charts** | [Chart.js](https://www.chartjs.org/) |
-| **Database & Auth** | [Supabase PostgreSQL](https://supabase.com/) |
-| **Backend API** | [FastAPI](https://fastapi.tiangolo.com/) (Python 3) |
-| **API Server** | Uvicorn |
-| **AI Engine** | Gemini 1.5 Flash (via FastAPI Proxy Backend) |
+| Layer | Technology | Description |
+|-------|------------|-------------|
+| **Build & Tooling** | Vite | Frontend development server and bundle optimizer |
+| **Frontend** | Vanilla JavaScript (ES6) | Responsive Single Page Application (SPA) architecture |
+| **Styling** | Vanilla CSS | Custom utility classes, responsive grids, and design tokens |
+| **Data Visualization** | Chart.js | Interactive charts and performance trend tracking |
+| **Database & Auth** | Supabase | PostgreSQL cloud storage, Auth management, and Row Level Security (RLS) |
+| **Backend API** | FastAPI (Python) | Proxy API for secure Gemini calls, parsing, and TTS synthesis |
+| **AI Integration** | Gemini API | Models `gemini-2.5-flash` (Text) and `gemini-2.5-flash-preview-tts` (Audio) |
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18+)
-- [Python 3.10+](https://www.python.org/)
-- npm
+- Node.js (v18 or higher)
+- Python (v3.10 or higher)
+- npm (Node Package Manager)
 
-### Installation & Execution
+### Installation
 
-#### Step 1: Install Dependencies
-```bash
-# Install Node dependencies
-npm install
+1. **Clone the repository and install frontend dependencies**:
+   ```bash
+   npm install
+   ```
 
-# Install Python backend dependencies
-pip install -r backend/requirements.txt
+2. **Install Python backend dependencies**:
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+
+### Configuration
+
+Set up the following environment variables in a `.env` file at the root of the project, or within your shell environment:
+
+```env
+# Gemini API Key (Required for backend services)
+GEMINI_API_KEY="your-gemini-api-key"
+
+# Supabase Credentials (Optional: can also be configured directly via the Settings UI)
+VITE_SUPABASE_URL="your-supabase-project-url"
+VITE_SUPABASE_ANON_KEY="your-supabase-anon-key"
 ```
 
-#### Step 2: Configure Environment Variables
-Copy or create `.env` in your environment or set it in your shell:
-```bash
-# For Gemini REST API access
-export GEMINI_API_KEY="your-gemini-api-key"
+### Execution
 
-# For Supabase integration (optional: can also configure in settings UI)
-export VITE_SUPABASE_URL="your-supabase-project-url"
-export VITE_SUPABASE_ANON_KEY="your-supabase-anon-key"
-```
+1. **Start the FastAPI Backend**:
+   ```bash
+   python backend/main.py
+   ```
+   The backend proxy will start on `http://127.0.0.1:8000`. You can verify its health by visiting `http://127.0.0.1:8000/api/health`.
 
-#### Step 3: Start the FastAPI Backend Proxy
-```bash
-python backend/main.py
-```
-The backend server will run on **http://127.0.0.1:8000**. Verify its health status by visiting `http://127.0.0.1:8000/api/health`.
-
-#### Step 4: Start the Frontend App
-In a new terminal window:
-```bash
-npm run dev
-```
-The Vite development server will open the app at **http://localhost:3000** (or `http://localhost:3001`).
+2. **Start the Frontend Application**:
+   In a separate terminal window, run:
+   ```bash
+   npm run dev
+   ```
+   The Vite development server will open the application at `http://localhost:3000` (or the next available port, e.g., `http://localhost:3001`).
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
-```
+```text
 sustaina/
-├── index.html                    # Root HTML
-├── package.json                  # Dependencies & scripts
+├── index.html                    # Single Page Application root HTML
+├── package.json                  # Frontend dependencies and execution scripts
 ├── vite.config.js                # Vite configuration
 ├── backend/
-│   ├── main.py                   # FastAPI proxy server (Gemini endpoints)
-│   └── requirements.txt          # Python dependencies
+│   ├── main.py                   # FastAPI application (Gemini and TTS handlers)
+│   └── requirements.txt          # Python packages
 ├── src/
-│   ├── index.css                 # Premium custom design system
-│   ├── main.js                   # App entry point & router init
-│   ├── router.js                 # Hash-based SPA router
+│   ├── index.css                 # Custom design system stylesheet
+│   ├── main.js                   # Application entry point and routing manager
+│   ├── router.js                 # Hash-based client-side router
 │   ├── components/
-│   │   ├── charts.js             # Chart.js helper wrappers
-│   │   ├── icons.js              # Inline SVG icon library
-│   │   ├── sidebar.js            # Left navigation sidebar
-│   │   └── topbar.js             # Top header bar (auth dropdown, bell, household view)
+│   │   ├── charts.js             # Chart.js renderers
+│   │   ├── icons.js              # Vector SVG inline library
+│   │   ├── sidebar.js            # Core left sidebar navigation
+│   │   └── topbar.js             # Top header bar (auth, bell, and household view)
 │   ├── services/
-│   │   ├── gemini.js             # Speech Web APIs & FastAPI call proxy
-│   │   └── supabase.js           # Supabase DB operations and clients
+│   │   ├── gemini.js             # Client API callers and speech fallback
+│   │   └── supabase.js           # Supabase database client and queries
 │   ├── data/
-│   │   ├── emissions.js          # CEA/MoSPI emission factors engine
-│   │   └── mockData.js           # Chart and baseline mock data
+│   │   ├── emissions.js          # Carbon calculation engines
+│   │   └── mockData.js           # Analytics chart baselines
 │   ├── state/
-│   │   └── store.js              # LocalStorage & Supabase sync reactive store
+│   │   └── store.js              # Global state manager and data syncer
 │   ├── pages/
-│   │   ├── dashboard.js          # dynamic Home dashboard (scales household views)
-│   │   ├── auth.js               # Login / Signup / Recovery
-│   │   ├── timeline.js           # Milestones progress timeline
-│   │   ├── simulationHistory.js  # Carbon Twin simulation list & comparison selector
-│   │   ├── notifications.js      # Notifications dropdown & list page
-│   │   ├── analytics.js          # Weekly/monthly footprint trends charts
-│   │   ├── activityLog.js        # Activity log filter tabs
-│   │   ├── aryaCoach.js          # AI coach plan
-│   │   ├── insights.js           # Analytics bar graphs & recommendations
-│   │   ├── carbonTwin.js         # Carbon Twin comparison sliders
-│   │   ├── reports.js            # quarterly/monthly reports generator (Canvas + Print)
-│   │   ├── goals.js              # Sustainability goals
-│   │   ├── profile.js            # Score level details & XP badges
-│   │   ├── settings.js           # settings & Supabase URL/Key inputs
-│   │   ├── community.js          # Community
-│   │   └── onboarding.js         # Conversational voice onboarding
+│   │   ├── dashboard.js          # Dynamic metrics home page
+│   │   ├── auth.js               # User accounts panel
+│   │   ├── timeline.js           # Chronological milestones view
+│   │   ├── simulationHistory.js  # Carbon Twin comparison view
+│   │   ├── notifications.js      # Notifications archive list
+│   │   ├── analytics.js          # Long-term emission charts
+│   │   ├── activityLog.js        # Logging categories
+│   │   ├── aryaCoach.js          # Recommendation actions panel
+│   │   ├── insights.js           # Carbon insights and totals
+│   │   ├── carbonTwin.js         # Interactive twin sliders
+│   │   ├── reports.js            # Monthly reports compiler
+│   │   ├── goals.js              # Habit milestones targets
+│   │   ├── profile.js            # Level statistics and achievements
+│   │   ├── settings.js           # Key configurations panel
+│   │   ├── community.js          # Shared leaderboard
+│   │   └── onboarding.js         # Conversational voice wizard
 ```
 
 ---
 
-## 🌿 Carbon Calculation Engine
+## Carbon Calculation Engine
 
-Built with **2024 CEA/MoSPI data** for India-specific emission factors:
-- **Electricity**: State-wise grid factors (Maharashtra 0.79, Karnataka 0.74, Delhi 0.80 kg CO₂/kWh)
-- **Transport**: Per-km factors (Car 0.192, Bike 0.089, Metro 0.041, Bus 0.031, Train 0.014 kg CO₂)
-- **Food**: Per-meal factors (Vegan 0.50, Vegetarian 0.75, Chicken 2.45, Mutton 5.50 kg CO₂)
-- **LPG**: 37.5 kg CO₂ per cylinder
-- **Money savings**: Calculated against Indian fuel prices, electricity tariffs, and LPG costs
-
----
-
-## 📄 License
-
-This project is for educational and demonstration purposes.
+Calculations are built utilizing 2024 CEA (Central Electricity Authority) and MoSPI (Ministry of Statistics and Programme Implementation) statistics for Indian context accuracy:
+- **Electricity**: State-wise grid emission factors (e.g., Maharashtra: 0.79, Karnataka: 0.74, Delhi: 0.80 kg CO₂/kWh).
+- **Transport**: Mode-specific emission factors per kilometer (Car: 0.192, Bike: 0.089, Metro: 0.041, Bus: 0.031, Train: 0.014 kg CO₂).
+- **Diet**: Meal-specific emission factors (Vegan: 0.50, Vegetarian: 0.75, Chicken: 2.45, Mutton: 5.50 kg CO₂).
+- **LPG**: 37.5 kg CO₂ per domestic cylinder.
+- **Monetary Savings**: Evaluated using real-time baseline Indian fuel costs, average state electricity tariffs, and LPG pricing.
 
 ---
 
-## 👤 Author
+## License
 
-**Aryan Medigeri** — Built with 💚 for a sustainable India.
+This project is open-source and intended for educational and demonstration purposes.
 
 ---
 
-> *"You don't have to be perfect. You just have to start."* — Arya 🌱
+## Author
+
+**Aryan Medigeri** — Built with commitment to a sustainable India.
+
+> "You don't have to be perfect. You just have to start." — Arya
