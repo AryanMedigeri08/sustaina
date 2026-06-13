@@ -24,7 +24,7 @@ export function renderInsights(container) {
             <button class="tab ${activePeriod === 'month' ? 'active' : ''}" data-period="month">Month</button>
             <button class="tab ${activePeriod === 'year' ? 'active' : ''}" data-period="year">Year</button>
           </div>
-          <div class="flex items-center gap-2" style="background: white; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+          <div class="flex items-center gap-2" style="background: var(--bg-card); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--border-light);">
             <span class="text-sm">May 2026</span>
             <span style="color: var(--text-tertiary);">▾</span>
           </div>

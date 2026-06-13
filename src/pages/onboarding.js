@@ -38,17 +38,18 @@ const GOAL_OPTIONS = [
 
 let currentStep = 0;
 let onboardingData = {
+  language: 'english',
   name: '',
   city: '',
-  householdSize: 4,
-  homeType: 'Apartment',
-  primaryTransport: 'bike',
-  diet: 'vegetarian',
-  workType: 'Office',
-  electricitySource: 'MSEDCL (State Grid)',
-  electricityUnits: 280,
-  lpgCylinders: 1,
-  dailyTransportKm: 18,
+  householdSize: null,
+  homeType: '',
+  primaryTransport: '',
+  diet: '',
+  workType: '',
+  electricitySource: '',
+  electricityUnits: null,
+  lpgCylinders: null,
+  dailyTransportKm: null,
   goals: [],
 };
 
@@ -130,6 +131,23 @@ function setupEndSession() {
 
 // ─── Step 1: Welcome ─── //
 function renderWelcome(container) {
+  onboardingData = {
+    language: 'english',
+    name: '',
+    city: '',
+    householdSize: null,
+    homeType: '',
+    primaryTransport: '',
+    diet: '',
+    workType: '',
+    electricitySource: '',
+    electricityUnits: null,
+    lpgCylinders: null,
+    dailyTransportKm: null,
+    goals: [],
+  };
+  let selectedLang = 'english';
+
   container.innerHTML = `
     <div class="onboarding-container page-enter">
       <div class="onboarding-sidebar">
@@ -147,22 +165,15 @@ function renderWelcome(container) {
       <div class="onboarding-main">
         <div class="onboarding-content">
           <h2 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">Welcome to Sustaina</h2>
-          <p class="text-secondary mb-8">Set up your profile conversationally with Arya, your AI voice companion.</p>
+          <p class="text-secondary mb-6">Set up your profile conversationally with Arya, your AI voice companion.</p>
 
-          <div class="pulse-ring">
-            <div class="pulse-inner" style="display: flex; align-items: center; justify-content: center;">
-              <span style="display: flex; align-items: center; justify-content: center; color: var(--green-600); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));">
-                ${icons.leaf.replace('width="20" height="20"', 'width="40" height="40"')}
-              </span>
-            </div>
-          </div>
-
-          <div style="max-width: 400px; margin: 0 auto; text-align: left;" class="card mb-8">
-            <h4 style="margin-bottom: var(--space-3); font-weight: 700;">How it works:</h4>
-            <div style="display: flex; flex-direction: column; gap: var(--space-3); font-size: var(--text-sm);">
-              <div style="display: flex; gap: var(--space-2); align-items: center;"><span style="color: var(--green-600); display: flex;">${icons.mic.replace('width="28" height="28"', 'width="16" height="16"')}</span> <span>Speak naturally in English to Arya.</span></div>
-              <div style="display: flex; gap: var(--space-2); align-items: center;"><span style="color: var(--accent-amber); display: flex;">${icons.energy.replace('width="20" height="20"', 'width="16" height="16"')}</span> <span>Gemini extracts details (Name, City, Diet, etc.) automatically.</span></div>
-              <div style="display: flex; gap: var(--space-2); align-items: center;"><span style="color: var(--green-600); display: flex;">${icons.edit.replace('width="16" height="16"', 'width="16" height="16"')}</span> <span>You can edit or type anything at the end.</span></div>
+          <!-- Language Selector -->
+          <div style="max-width: 400px; margin: 0 auto var(--space-6); text-align: left;" class="card">
+            <h4 style="margin-bottom: var(--space-3); font-weight: 700; text-align: center; color: var(--green-800);">Select Arya's Language</h4>
+            <div style="display: flex; gap: var(--space-3); justify-content: center;">
+              <button class="btn btn-primary lang-btn" data-lang="english" style="background: var(--green-600); color: white; flex: 1; font-weight: 600; padding: var(--space-3); border-radius: var(--radius-md); border: none;">English</button>
+              <button class="btn btn-secondary lang-btn" data-lang="hindi" style="flex: 1; font-weight: 600; padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border-default);">Hindi (हिंदी)</button>
+              <button class="btn btn-secondary lang-btn" data-lang="hinglish" style="flex: 1; font-weight: 600; padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border-default);">Hinglish</button>
             </div>
           </div>
 
@@ -180,7 +191,41 @@ function renderWelcome(container) {
     </div>
   `;
 
+  // Attach language selector listeners
+  container.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.lang-btn').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-secondary');
+        b.style.background = '';
+        b.style.color = '';
+        b.style.border = '1px solid var(--border-default)';
+      });
+      btn.classList.remove('btn-secondary');
+      btn.classList.add('btn-primary');
+      btn.style.background = 'var(--green-600)';
+      btn.style.color = 'white';
+      btn.style.border = 'none';
+      selectedLang = btn.dataset.lang;
+    });
+  });
+
   document.getElementById('start-onboarding').addEventListener('click', () => {
+    onboardingData = {
+      language: selectedLang,
+      name: '',
+      city: '',
+      householdSize: null,
+      homeType: '',
+      primaryTransport: '',
+      diet: '',
+      workType: '',
+      electricitySource: '',
+      electricityUnits: null,
+      lpgCylinders: null,
+      dailyTransportKm: null,
+      goals: [],
+    };
     currentStep = 1;
     conversationHistory = [];
     pendingQuestion = false;
@@ -189,6 +234,7 @@ function renderWelcome(container) {
 
   document.getElementById('skip-onboarding-btn').addEventListener('click', () => {
     onboardingData = {
+      language: selectedLang,
       name: 'Aryan Medigeri',
       city: 'Pune',
       householdSize: 4,
@@ -232,13 +278,13 @@ function renderConversation(container) {
               <div class="extraction-check">${onboardingData.primaryTransport && onboardingData.dailyTransportKm ? '✓' : ''}</div>
               <span>Transport: <strong id="val-transport">${onboardingData.primaryTransport ? `${onboardingData.primaryTransport} (${onboardingData.dailyTransportKm}km)` : '⏳'}</strong></span>
             </div>
-            <div class="extraction-item" id="ext-diet">
-              <div class="extraction-check">${onboardingData.diet ? '✓' : ''}</div>
-              <span>Diet: <strong id="val-diet">${onboardingData.diet || '⏳'}</strong></span>
+            <div class="extraction-item" id="ext-energy">
+              <div class="extraction-check">${onboardingData.electricityUnits ? '✓' : ''}</div>
+              <span>Energy: <strong id="val-energy">${onboardingData.electricityUnits ? `${onboardingData.electricityUnits} units/mo` : '⏳'}</strong></span>
             </div>
             <div class="extraction-item" id="ext-household">
-              <div class="extraction-check">${onboardingData.householdSize && onboardingData.electricityUnits ? '✓' : ''}</div>
-              <span>Household: <strong id="val-household">${onboardingData.electricityUnits ? `${onboardingData.householdSize} people (${onboardingData.electricityUnits} units)` : '⏳'}</strong></span>
+              <div class="extraction-check">${onboardingData.householdSize && onboardingData.diet ? '✓' : ''}</div>
+              <span>Household & Diet: <strong id="val-household">${onboardingData.householdSize ? `${onboardingData.householdSize} people, ${onboardingData.diet || '⏳'}` : '⏳'}</strong></span>
             </div>
           </div>
         </div>
@@ -361,9 +407,23 @@ function updateVisualChecklist() {
   updateItem('ext-city', onboardingData.city, onboardingData.city);
   updateItem('ext-transport', onboardingData.primaryTransport && onboardingData.dailyTransportKm, 
     onboardingData.primaryTransport ? `${onboardingData.primaryTransport} (${onboardingData.dailyTransportKm}km)` : '');
-  updateItem('ext-diet', onboardingData.diet, onboardingData.diet);
-  updateItem('ext-household', onboardingData.householdSize && onboardingData.electricityUnits,
-    onboardingData.electricityUnits ? `${onboardingData.householdSize} people (${onboardingData.electricityUnits} units)` : '');
+  updateItem('ext-energy', onboardingData.electricityUnits,
+    onboardingData.electricityUnits ? `${onboardingData.electricityUnits} units/mo` : '');
+  updateItem('ext-household', onboardingData.householdSize && onboardingData.diet,
+    onboardingData.householdSize ? `${onboardingData.householdSize} people, ${onboardingData.diet || '⏳'}` : '');
+}
+
+function getLoadingStatusMessage() {
+  // Status messages are always in English regardless of selected language
+  const statusMessages = [
+    "Arya is thinking...",
+    "Formulating custom response...",
+    "Synthesizing voice audio...",
+    "Tuning high-quality speech...",
+    "Generating Arya's reply...",
+    "Preparing audio response..."
+  ];
+  return statusMessages[Math.floor(Math.random() * statusMessages.length)];
 }
 
 /**
@@ -376,7 +436,7 @@ async function runConversationStep(container) {
   // Show thinking status
   const speechTextEl = document.getElementById('arya-speech-text');
   if (speechTextEl) {
-    speechTextEl.textContent = "Arya is thinking...";
+    speechTextEl.textContent = getLoadingStatusMessage();
   }
   const waveformEl = document.getElementById('onboarding-waveform');
   if (waveformEl) {
@@ -392,67 +452,111 @@ async function runConversationStep(container) {
 
   // Local fallback if backend is down or returned null
   if (!question) {
-    if (!onboardingData.name || !onboardingData.city) {
-      question = "Hello! I am Arya. Let's get to know you. What is your name, and which city do you live in?";
+    if (!onboardingData.name) {
+      if (onboardingData.language === 'hindi') {
+        question = "नमस्ते! मैं जानती हूँ कि आपका समय बहुत कीमती है, लेकिन मुझे आपको ऑनबोर्ड करने के लिए केवल 2 मिनट चाहिए। शुरू करने के लिए, क्या आप मुझे अपना नाम बता सकते हैं?";
+      } else if (onboardingData.language === 'hinglish') {
+        question = "Hello! Mujhe pata hai aapka time bahut precious hai, lekin mujhe aapko onboard karne ke liye bas 2 minutes chahiye. Chaliye start karte hain, kya aap mujhe apna naam bata sakte hain?";
+      } else {
+        question = "Hello! I know your time is precious, but I just need 2 minutes of it to onboard you. To get started, could you please tell me your name?";
+      }
+    } else if (!onboardingData.city) {
+      if (onboardingData.language === 'hindi') {
+        question = `${onboardingData.name.split(' ')[0]}, आपसे मिलकर खुशी हुई! आप किस शहर में रहते हैं?`;
+      } else if (onboardingData.language === 'hinglish') {
+        question = `${onboardingData.name.split(' ')[0]}, aapse milkar khushi hui! Aap kis city me rehte hain?`;
+      } else {
+        question = `Nice to meet you, ${onboardingData.name.split(' ')[0]}! Which city do you live in?`;
+      }
     } else if (!onboardingData.primaryTransport || !onboardingData.dailyTransportKm) {
-      question = `Nice to meet you, ${onboardingData.name.split(' ')[0]}! Next, how do you usually travel to work or college, and what is your daily commute distance in kilometers?`;
-    } else if (!onboardingData.diet) {
-      question = "Got it! How would you describe your daily diet? Are you vegetarian, vegan, or non-vegetarian?";
-    } else if (!onboardingData.householdSize || !onboardingData.electricityUnits) {
-      question = "Understood. Finally, how many people live in your household, and what is your average monthly electricity usage in units?";
+      if (onboardingData.language === 'hindi') {
+        question = `बढ़िया! आप आमतौर पर काम या कॉलेज के लिए कैसे यात्रा करते हैं, और आपकी दैनिक यात्रा की दूरी किलोमीटर में कितनी है?`;
+      } else if (onboardingData.language === 'hinglish') {
+        question = `Badhiya! Aap work ya college kaise jate hain, aur daily commute distance kitna km hai?`;
+      } else {
+        question = `Great! How do you usually travel to work or college, and what is your daily commute distance in kilometers?`;
+      }
+    } else if (!onboardingData.electricityUnits) {
+      if (onboardingData.language === 'hindi') {
+        question = "समझ गई! आपका औसत मासिक बिजली का उपयोग यूनिट में कितना है?";
+      } else if (onboardingData.language === 'hinglish') {
+        question = "Samajh gayi! Aapka average monthly electricity consumption kitna units hai?";
+      } else {
+        question = "Got it! What is your average monthly electricity consumption in units?";
+      }
+    } else if (!onboardingData.householdSize || !onboardingData.diet) {
+      if (onboardingData.language === 'hindi') {
+        question = "ठीक है। अंत में, आपके घर में कितने लोग रहते हैं, और आपकी खान-पान शैली क्या है — शाकाहारी, वीगन, या मांसाहारी?";
+      } else if (onboardingData.language === 'hinglish') {
+        question = "Theek hai. Finally, aapke ghar me kitne log rehte hain, aur aapki diet kya hai — vegetarian, vegan ya non-vegetarian?";
+      } else {
+        question = "Understood. Finally, how many people live in your household, and what is your diet type — vegetarian, vegan, or non-vegetarian?";
+      }
     } else {
-      question = "Perfect! I have extracted all your details. Let's review them together now.";
+      if (onboardingData.language === 'hindi') {
+        question = "उत्कृष्ट! मैंने आपकी सभी जानकारी एकत्र कर ली है। आइए अब हम मिलकर इसकी समीक्षा करें।";
+      } else if (onboardingData.language === 'hinglish') {
+        question = "Perfect! Maine aapki saari details collect kar li hain. Chaliye ab ek baar inko review kar lete hain.";
+      } else {
+        question = "Perfect! I have extracted all your details. Let's review them together now.";
+      }
     }
   }
 
   pendingQuestion = false;
 
   const isCompleted = question.includes("Perfect! I have extracted all your details") || 
+    question.includes("उत्कृष्ट! मैंने आपकी सभी जानकारी") ||
+    question.includes("Perfect! Maine aapki saari details") ||
     (onboardingData.name && onboardingData.city && onboardingData.primaryTransport && 
      onboardingData.dailyTransportKm && onboardingData.diet && 
      onboardingData.householdSize && onboardingData.electricityUnits);
 
   if (isCompleted) {
-    // Force the standard final question
-    question = "Perfect! I have extracted all your details. Let's review them together now.";
-    conversationHistory.push(`Arya: ${question}`);
-
-    speakText(question, 
-      () => {
-        isAryaSpeaking = true;
-        const speechEl = document.getElementById('arya-speech-text');
-        if (speechEl) speechEl.textContent = question;
-        const waveEl = document.getElementById('onboarding-waveform');
-        if (waveEl) waveEl.style.opacity = '1';
-      }, 
-      () => {
-        isAryaSpeaking = false;
-        const waveEl = document.getElementById('onboarding-waveform');
-        if (waveEl) waveEl.style.opacity = '0.2';
-        currentStep = 2; // Move to Review
-        renderOnboarding(container);
-      }
-    );
-    return;
+    if (onboardingData.language === 'hindi') {
+      question = "उत्कृष्ट! मैंने आपकी सभी जानकारी एकत्र कर ली है। आइए अब हम मिलकर इसकी समीक्षा करें।";
+    } else if (onboardingData.language === 'hinglish') {
+      question = "Perfect! Maine aapki saari details collect kar li hain. Chaliye ab ek baar inko review kar lete hain.";
+    } else {
+      question = "Perfect! I have extracted all your details. Let's review them together now.";
+    }
   }
 
   conversationHistory.push(`Arya: ${question}`);
 
+  const playText = question;
+
   // Speak the question
-  speakText(question, 
+  speakText(
+    playText, 
+    // onPlaying: show text and animate waveform
     () => {
       isAryaSpeaking = true;
       const speechEl = document.getElementById('arya-speech-text');
-      if (speechEl) speechEl.textContent = question;
+      if (speechEl) speechEl.textContent = playText;
       const waveEl = document.getElementById('onboarding-waveform');
       if (waveEl) waveEl.style.opacity = '1';
     },
+    // onEnd
     () => {
       isAryaSpeaking = false;
       const waveEl = document.getElementById('onboarding-waveform');
       if (waveEl) waveEl.style.opacity = '0.2';
-      // Auto-start recording after question ends
-      startListening(container);
+      
+      if (isCompleted) {
+        currentStep = 2; // Move to Review
+        renderOnboarding(container);
+      } else {
+        // Auto-start recording after question ends
+        startListening(container);
+      }
+    },
+    // onLoading
+    () => {
+      const speechEl = document.getElementById('arya-speech-text');
+      if (speechEl) speechEl.textContent = getLoadingStatusMessage();
+      const waveEl = document.getElementById('onboarding-waveform');
+      if (waveEl) waveEl.style.opacity = '0.5';
     }
   );
 }
@@ -620,7 +724,7 @@ function renderReview(container) {
   setupEndSession();
 
   document.getElementById('review-back')?.addEventListener('click', () => {
-    currentStep = 1; // back to chat
+    currentStep = 0; // Go back to welcome and select language/reset
     conversationHistory = [];
     pendingQuestion = false;
     renderOnboarding(container);

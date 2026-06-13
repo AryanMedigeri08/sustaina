@@ -98,7 +98,7 @@ export function renderAryaCoach(container) {
         <!-- Coaching Cards Grid -->
         <div class="grid-2 stagger-2">
           ${data.cards.map(card => `
-            <div class="coaching-card" style="display: flex; align-items: center; gap: var(--space-4); border: 1px solid var(--border-light); padding: var(--space-5); border-radius: var(--radius-lg); background: white;">
+            <div class="coaching-card" style="display: flex; align-items: center; gap: var(--space-4); border: 1px solid var(--border-light); padding: var(--space-5); border-radius: var(--radius-lg); background: var(--bg-card);">
               <div class="coaching-card-icon" style="background: ${card.bgColor}; width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;">
                 ${card.icon}
               </div>

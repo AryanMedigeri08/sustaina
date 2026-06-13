@@ -50,6 +50,7 @@
   /* Background Colors */
   --bg-app: var(--neutral-100);
   --bg-sidebar: #ffffff;
+  --bg-topbar: rgba(240, 240, 235, 0.8);
   --bg-card: #ffffff;
   --bg-card-hover: var(--neutral-50);
   --bg-input: var(--neutral-50);
@@ -136,6 +137,55 @@
   --topbar-height: 64px;
   --content-max-width: 1200px;
   --card-padding: var(--space-6);
+}
+
+[data-theme="dark"] {
+  /* Inverse Neutral Palette - for dark theme */
+  --neutral-900: #fafaf7;
+  --neutral-800: #f0f0eb;
+  --neutral-700: #e0e0d8;
+  --neutral-600: #c2c2b8;
+  --neutral-500: #9e9e93;
+  --neutral-400: #7a7a70;
+  --neutral-300: #5e5e56;
+  --neutral-200: #45453f;
+  --neutral-100: #2d2d2a;
+  --neutral-50: #1a1a18;
+
+  /* Primary Palette adjustments for dark mode readability */
+  --green-900: #f0f8ea;
+  --green-800: #ddf0cd;
+  --green-700: #b5dd9a;
+  --green-600: #8ec96e;
+  --green-500: #6bb344;
+  --green-50: #1a3409;
+
+  /* Background Colors */
+  --bg-app: #121210;
+  --bg-sidebar: #1a1a18;
+  --bg-topbar: rgba(18, 18, 16, 0.85);
+  --bg-card: #1e1e1c;
+  --bg-card-hover: #2d2d2a;
+  --bg-input: #2d2d2a;
+  --bg-modal-overlay: rgba(10, 20, 5, 0.7);
+
+  /* Text Colors */
+  --text-primary: #f0f0eb;
+  --text-secondary: #c2c2b8;
+  --text-tertiary: #9e9e93;
+  --text-inverse: #1a1a18;
+  --text-accent: var(--green-300);
+
+  /* Border Colors */
+  --border-light: #2d2d2a;
+  --border-default: #45453f;
+  --border-focus: var(--green-400);
+  
+  /* Semantic adjustments for dark mode readability */
+  --color-primary: var(--green-300);
+  --color-primary-dark: var(--green-200);
+  --color-primary-light: var(--green-50);
+  --color-primary-hover: var(--green-400);
 }
 
 /* ─── Reset & Base ─── */
@@ -436,7 +486,7 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   justify-content: flex-end;
   padding: var(--space-4) var(--space-8);
-  background: rgba(240, 240, 235, 0.8);
+  background: var(--bg-topbar);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-light);
   gap: var(--space-4);
@@ -474,7 +524,7 @@ input:focus, select:focus, textarea:focus {
   height: 8px;
   background: var(--accent-red);
   border-radius: var(--radius-full);
-  border: 2px solid white;
+  border: 2px solid var(--bg-card);
 }
 
 .topbar-avatar {
@@ -659,9 +709,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-secondary {
-  background: white;
-  color: var(--green-800);
-  border: 1px solid var(--green-800);
+  background: var(--bg-card);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
 }
 .btn-secondary:hover {
   background: var(--green-50);

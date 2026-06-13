@@ -37,7 +37,7 @@ export function renderTimeline(container) {
         width: 40px;
         height: 40px;
         border-radius: var(--radius-full);
-        background: white;
+        background: var(--bg-card);
         border: 2px solid var(--green-700);
         display: flex;
         align-items: center;
@@ -51,7 +51,7 @@ export function renderTimeline(container) {
         transform: scale(1.1);
       }
       .timeline-node-card {
-        background: white;
+        background: var(--bg-card);
         border: 1px solid var(--border-light);
         border-radius: var(--radius-lg);
         padding: var(--space-5);

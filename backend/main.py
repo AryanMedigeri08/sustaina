@@ -187,7 +187,11 @@ def extract_profile(req: OnboardingExtractionRequest):
         "  \"householdSize\": number or null,\n"
         "  \"electricityUnits\": number or null,\n"
         "  \"lpgCylinders\": number or null\n"
-        "}"
+        "}\n\n"
+        "Note: The user transcript may be in English, Hindi (Devanagari), or Hinglish (transliterated Hindi). "
+        "Translate and understand their response accurately to update the profile JSON fields. "
+        "If they mention values in Hindi or Hinglish (e.g. 'do log' or 'char log' for householdSize, 'shakahari' or 'veg' for diet), "
+        "parse them correctly to match the exact schema values."
     )
     
     prompt = (
@@ -200,23 +204,55 @@ def extract_profile(req: OnboardingExtractionRequest):
 
 @app.post("/api/onboarding-next-question")
 def onboarding_next_question(req: OnboardingNextQuestionRequest):
+    language = req.current_data.get("language", "english").lower()
+    
+    # If history is empty, bypass Gemini and return the exact requested opening message in the chosen language.
+    if not req.history:
+        if language == "hindi":
+            return {"question": "नमस्ते! मैं जानती हूँ कि आपका समय बहुत कीमती है, लेकिन मुझे आपको ऑनबोर्ड करने के लिए केवल 2 मिनट चाहिए। शुरू करने के लिए, क्या आप मुझे अपना नाम बता सकते हैं?"}
+        elif language == "hinglish":
+            return {"question": "Hello! Mujhe pata hai aapka time bahut precious hai, lekin mujhe aapko onboard karne ke liye bas 2 minutes chahiye. Chaliye start karte hain, kya aap mujhe apna naam bata sakte hain?"}
+        else:
+            return {"question": "Hello! I know your time is precious, but I just need 2 minutes of it to onboard you. To get started, could you please tell me your name?"}
+
+    lang_instruction = ""
+    if language == "hindi":
+        lang_instruction = (
+            "You MUST speak and respond ONLY in Hindi using Devanagari script (देवनागरी लिपि). "
+            "Do NOT write in English or Hinglish. Make sure your response is culturally warm, polite, and uses appropriate Hindi vocabulary."
+        )
+    elif language == "hinglish":
+        lang_instruction = (
+            "You MUST speak and respond ONLY in Hinglish (Hindi spoken language written in Latin/English letters). "
+            "Do NOT write in Devanagari script. Use common Romanized Hindi wording, for example: "
+            "'Aapka name/city kya hai?', 'Aap work ke liye kaise travel karte hain?', 'Aapki monthly electricity units kitni hain?'. "
+            "Keep it extremely natural and conversational, exactly how people chat in India."
+        )
+    else:
+        lang_instruction = (
+            "You MUST speak and respond ONLY in clear, natural, friendly English."
+        )
+
     system_prompt = (
         "You are Arya, the warm AI sustainability coach for Sustaina. Your goal is to guide the user through onboarding "
         "by asking them questions to collect their profile details in a natural, friendly, conversational manner.\n"
-        "Here are the fields you need to collect:\n"
-        "- Name\n"
-        "- City in India\n"
-        "- Primary transport mode and daily commute distance in km\n"
-        "- Diet type (vegan, vegetarian, non-vegetarian)\n"
-        "- Household size and average monthly electricity units (kWh)\n\n"
+        f"{lang_instruction}\n\n"
+        "Here are the fields you need to collect, and you MUST collect them strictly in this sequence:\n"
+        "1. Name (already collected)\n"
+        "2. City in India\n"
+        "3. Primary transport mode and daily commute distance in km\n"
+        "4. Average monthly electricity units (kWh)\n"
+        "5. Household size and Diet type (vegan, vegetarian, non-vegetarian)\n\n"
         "Current profile state:\n"
         f"{json.dumps(req.current_data)}\n\n"
         "Conversation history so far:\n"
         f"{json.dumps(req.history)}\n\n"
-        "Identify the next missing field or group of fields and formulate a natural, short, and friendly follow-up question. "
-        "Keep it conversational (e.g., greet them, react briefly to what they already said, and ask the next question). "
-        "Do not ask for more than one or two details at a time. "
-        "If all details are successfully collected, output exactly: 'Perfect! I have extracted all your details. Let\'s review them together now.'\n"
+        "Identify the next missing field in the sequence and formulate a natural, short, and friendly follow-up question in the selected language. "
+        "Do not ask questions out of order. "
+        "If all details are successfully collected, output exactly: 'Perfect! I have extracted all your details. Let's review them together now.' in the selected language:\n"
+        "- English: 'Perfect! I have extracted all your details. Let\'s review them together now.'\n"
+        "- Hindi: 'उत्कृष्ट! मैंने आपकी सभी जानकारी एकत्र कर ली है। आइए अब हम मिलकर इसकी समीक्षा करें।'\n"
+        "- Hinglish: 'Perfect! Maine aapki saari details collect kar li hain. Chaliye ab ek baar inko review kar lete hain.'\n\n"
         "Format the output EXACTLY in the following JSON schema:\n"
         "{\n"
         "  \"question\": \"string (the question to speak to the user)\"\n"

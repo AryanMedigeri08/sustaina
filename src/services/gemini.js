@@ -169,15 +169,11 @@ export async function updateAIMemory(activities, simulations, goals, memory) {
 
 let activeAudio = null;
 
-/**
- * Speaks text using the backend Gemini TTS API (gemini-2.0-flash with AUDIO modality).
- * Falls back to browser SpeechSynthesis if the backend call fails.
- */
-export async function speakText(text, onStart = null, onEnd = null) {
+export async function speakText(text, onPlaying = null, onEnd = null, onLoading = null) {
   // Cancel any active playback
   stopSpeaking();
 
-  if (onStart) onStart();
+  if (onLoading) onLoading();
 
   try {
     const res = await fetch(`${BACKEND_URL}/api/speak`, {
@@ -193,6 +189,9 @@ export async function speakText(text, onStart = null, onEnd = null) {
     const data = await res.json();
     if (data && data.audio) {
       activeAudio = new Audio("data:audio/wav;base64," + data.audio);
+      if (onPlaying) {
+        activeAudio.onplaying = onPlaying;
+      }
       if (onEnd) {
         activeAudio.onended = onEnd;
         activeAudio.onerror = onEnd;
@@ -210,16 +209,25 @@ export async function speakText(text, onStart = null, onEnd = null) {
       const utterance = new SpeechSynthesisUtterance(text);
       
       const voices = window.speechSynthesis.getVoices();
-      const naturalVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Natural')) || voices[0];
-      if (naturalVoice) {
-        utterance.voice = naturalVoice;
+      
+      // Auto-detect Hindi characters
+      if (/[\u0900-\u097F]/.test(text)) {
+        utterance.lang = 'hi-IN';
+        const hindiVoice = voices.find(v => v.lang.startsWith('hi') || v.name.toLowerCase().includes('hindi'));
+        if (hindiVoice) utterance.voice = hindiVoice;
+      } else {
+        const naturalVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Natural')) || voices[0];
+        if (naturalVoice) utterance.voice = naturalVoice;
       }
+      
       utterance.rate = 1.0;
       utterance.pitch = 1.05;
       
+      if (onPlaying) utterance.onstart = onPlaying;
       if (onEnd) utterance.onend = onEnd;
       window.speechSynthesis.speak(utterance);
     } else {
+      if (onPlaying) onPlaying();
       if (onEnd) onEnd();
     }
   }

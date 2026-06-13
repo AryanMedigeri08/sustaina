@@ -28,7 +28,7 @@ export function renderAuth(container) {
 function renderAuthShell(container) {
   container.innerHTML = `
     <div class="onboarding-container page-enter" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg-app);">
-      <div class="card" style="width: 100%; max-width: 440px; padding: var(--space-8); box-shadow: var(--shadow-xl); background: white;">
+      <div class="card" style="width: 100%; max-width: 440px; padding: var(--space-8); box-shadow: var(--shadow-xl); background: var(--bg-card);">
         
         <!-- Logo Header -->
         <div style="text-align: center; margin-bottom: var(--space-6);">
@@ -57,7 +57,7 @@ function renderActiveForm() {
   if (activeTab === 'login') {
     return `
       <div style="display: flex; gap: var(--space-1); background: var(--neutral-100); padding: var(--space-1); border-radius: var(--radius-md); margin-bottom: var(--space-6);">
-        <button class="tab-auth active" id="tab-login" style="flex: 1; padding: var(--space-2); border-radius: var(--radius-sm); border: none; font-size: var(--text-sm); font-weight: 600; cursor: pointer; background: white; color: var(--text-primary);">Log In</button>
+        <button class="tab-auth active" id="tab-login" style="flex: 1; padding: var(--space-2); border-radius: var(--radius-sm); border: none; font-size: var(--text-sm); font-weight: 600; cursor: pointer; background: var(--bg-card); color: var(--text-primary);">Log In</button>
         <button class="tab-auth" id="tab-signup" style="flex: 1; padding: var(--space-2); border-radius: var(--radius-sm); border: none; font-size: var(--text-sm); font-weight: 500; cursor: pointer; background: transparent; color: var(--text-secondary);">Sign Up</button>
       </div>
 
@@ -81,7 +81,7 @@ function renderActiveForm() {
     return `
       <div style="display: flex; gap: var(--space-1); background: var(--neutral-100); padding: var(--space-1); border-radius: var(--radius-md); margin-bottom: var(--space-6);">
         <button class="tab-auth" id="tab-login" style="flex: 1; padding: var(--space-2); border-radius: var(--radius-sm); border: none; font-size: var(--text-sm); font-weight: 500; cursor: pointer; background: transparent; color: var(--text-secondary);">Log In</button>
-        <button class="tab-auth active" id="tab-signup" style="flex: 1; padding: var(--space-2); border-radius: var(--radius-sm); border: none; font-size: var(--text-sm); font-weight: 600; cursor: pointer; background: white; color: var(--text-primary);">Sign Up</button>
+        <button class="tab-auth active" id="tab-signup" style="flex: 1; padding: var(--space-2); border-radius: var(--radius-sm); border: none; font-size: var(--text-sm); font-weight: 600; cursor: pointer; background: var(--bg-card); color: var(--text-primary);">Sign Up</button>
       </div>
 
       <div style="display: flex; flex-direction: column; gap: var(--space-4);" class="page-enter">

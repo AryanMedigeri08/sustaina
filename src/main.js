@@ -82,6 +82,10 @@ async function init() {
   if (initialized) return;
   initialized = true;
 
+  // Initialize theme from localStorage
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+
   // Handle ?reset URL param — clears localStorage and restarts
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has('reset')) {

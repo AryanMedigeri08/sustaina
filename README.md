@@ -7,13 +7,16 @@ Sustaina is an intelligent, India-centric personal carbon footprint tracking app
 ## Features
 
 ### Conversational Voice Onboarding
-- **Context-Aware Dialogue**: Conducts conversational onboarding using a backend next-question generator powered by Gemini models.
-- **Multimodal Text-to-Speech (TTS)**: Synthesizes high-quality spoken audio from Arya via Gemini's `v1beta` voice models (with local browser `SpeechSynthesis` fallback).
-- **Automated Parameter Extraction**: Extracts profile parameters (Name, City, Diet, Commute, Electricity) directly from conversation transcripts using structured JSON generation.
+- **Multi-Language Dialogue (English, Hindi, Hinglish)**: Users select their language at welcome. Arya conducts dialogue and speaks in the chosen language.
+- **Context-Aware Dialogue**: Guides users through a structured questionnaire sequence (City, Travel, Energy, Household & Diet) using a backend next-question generator.
+- **Multimodal Text-to-Speech (TTS)**: Synthesizes spoken audio from Arya via Gemini's voice models with local browser SpeechSynthesis fallback (which auto-detects Devanagari ranges for Hindi voices).
+- **Voice-Text Synchronization**: Displays status messages ("Arya is thinking...", "Synthesizing voice...") while generating response audio, delaying the question text bubble rendering until speech playback actively begins.
+- **Automated Parameter Extraction**: Extracts profile parameters directly from multilingual transcripts using structured JSON generation.
 
 ### Household Mode and Dynamic Scaling
 - **Aggregated Analytics**: Supports switching between Personal and Household modes.
 - **Dynamic Calculation**: Scales yearly emissions, monetary savings, tree equivalents, and sector breakdowns dynamically based on household size and shared efficiency calculations.
+- **Global Theme Upgrades**: Supports global dark and light mode theme toggles across all pages, reading preferences from local storage and updating styles via CSS design system tokens.
 
 ### Supabase Cloud Synchronization and Guest Mode
 - **Secure Authentication**: Includes an authentication system supporting login, registration, password recovery, and Guest Mode.
