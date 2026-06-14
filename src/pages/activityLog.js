@@ -46,10 +46,10 @@ export function renderActivityLog(container) {
       <!-- Quick Add -->
       <div class="card mb-6 stagger-1">
         <h3 class="card-title mb-4">Quick Add</h3>
-        <div class="quick-add-grid">
+        <div class="quick-add-grid" role="group" aria-label="Quick add activities">
           ${QUICK_ADD.map(item => `
-            <div class="quick-add-item" data-quick="${item.label}">
-              <span class="quick-add-icon" style="display: flex; align-items: center; justify-content: center; color: var(--green-700);">${icons.transport}</span>
+            <div class="quick-add-item" data-quick="${item.label}" role="button" tabindex="0" aria-label="Quick add ${item.label}">
+              <span class="quick-add-icon" style="display: flex; align-items: center; justify-content: center; color: var(--green-700);" aria-hidden="true">${icons.transport}</span>
               <span class="quick-add-label">${item.label}</span>
             </div>
           `).join('')}
@@ -109,14 +109,14 @@ function showAddActivityModal(pageContainer, prefill = '') {
   const overlay = document.getElementById('modal-overlay');
   overlay.classList.remove('hidden');
   overlay.innerHTML = `
-    <div class="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal-header">
-        <h3 class="modal-title">Add Activity</h3>
-        <button class="modal-close" id="modal-close">${icons.close}</button>
+        <h3 class="modal-title" id="modal-title">Add Activity</h3>
+        <button class="modal-close" id="modal-close" aria-label="Close modal">${icons.close}</button>
       </div>
       <div style="display: flex; flex-direction: column; gap: var(--space-4);">
         <div>
-          <label class="text-sm font-semibold mb-2" style="display: block;">Category</label>
+          <label for="modal-category" class="text-sm font-semibold mb-2" style="display: block;">Category</label>
           <select id="modal-category">
             <option value="transport">Transport</option>
             <option value="food">Food</option>
@@ -126,15 +126,15 @@ function showAddActivityModal(pageContainer, prefill = '') {
           </select>
         </div>
         <div>
-          <label class="text-sm font-semibold mb-2" style="display: block;">Activity Name</label>
+          <label for="modal-name" class="text-sm font-semibold mb-2" style="display: block;">Activity Name</label>
           <input type="text" id="modal-name" placeholder="e.g., Bike ride to office" value="${prefill}" />
         </div>
         <div>
-          <label class="text-sm font-semibold mb-2" style="display: block;">Distance / Quantity</label>
+          <label for="modal-quantity" class="text-sm font-semibold mb-2" style="display: block;">Distance / Quantity</label>
           <input type="number" id="modal-quantity" placeholder="e.g., 15 km" />
         </div>
         <div>
-          <label class="text-sm font-semibold mb-2" style="display: block;">Notes</label>
+          <label for="modal-notes" class="text-sm font-semibold mb-2" style="display: block;">Notes</label>
           <input type="text" id="modal-notes" placeholder="Optional details" />
         </div>
         <button class="btn btn-primary btn-lg" id="modal-save">Log Activity</button>

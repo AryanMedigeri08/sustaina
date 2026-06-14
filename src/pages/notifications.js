@@ -55,47 +55,47 @@ function renderPage(container) {
           <div style="display: flex; flex-direction: column; gap: var(--space-4);">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-3);">
               <div>
-                <div class="font-semibold text-sm">Weekly Coach Digests</div>
+                <label for="noti-pref-digests" class="font-semibold text-sm" style="cursor: pointer; display: block;">Weekly Coach Digests</label>
                 <div style="font-size: var(--text-xs); color: var(--text-secondary);">Receive notification when your weekly plan is ready</div>
               </div>
-              <label class="toggle">
-                <input type="checkbox" checked />
+              <label class="toggle" for="noti-pref-digests">
+                <input type="checkbox" id="noti-pref-digests" checked aria-label="Weekly Coach Digests" />
                 <span class="toggle-track"></span>
                 <span class="toggle-thumb"></span>
               </label>
             </div>
-
+ 
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-3);">
               <div>
-                <div class="font-semibold text-sm">Goal Milestones</div>
+                <label for="noti-pref-milestones" class="font-semibold text-sm" style="cursor: pointer; display: block;">Goal Milestones</label>
                 <div style="font-size: var(--text-xs); color: var(--text-secondary);">Alert when a sustainability goal or challenge is achieved</div>
               </div>
-              <label class="toggle">
-                <input type="checkbox" checked />
+              <label class="toggle" for="noti-pref-milestones">
+                <input type="checkbox" id="noti-pref-milestones" checked aria-label="Goal Milestones" />
                 <span class="toggle-track"></span>
                 <span class="toggle-thumb"></span>
               </label>
             </div>
-
+ 
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-3);">
               <div>
-                <div class="font-semibold text-sm">Arya AI Suggestions</div>
+                <label for="noti-pref-suggestions" class="font-semibold text-sm" style="cursor: pointer; display: block;">Arya AI Suggestions</label>
                 <div style="font-size: var(--text-xs); color: var(--text-secondary);">Receive real-time micro-recommendations from Arya</div>
               </div>
-              <label class="toggle">
-                <input type="checkbox" checked />
+              <label class="toggle" for="noti-pref-suggestions">
+                <input type="checkbox" id="noti-pref-suggestions" checked aria-label="Arya AI Suggestions" />
                 <span class="toggle-track"></span>
                 <span class="toggle-thumb"></span>
               </label>
             </div>
-
+ 
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <div class="font-semibold text-sm">System Updates</div>
+                <label for="noti-pref-updates" class="font-semibold text-sm" style="cursor: pointer; display: block;">System Updates</label>
                 <div style="font-size: var(--text-xs); color: var(--text-secondary);">Notify about new features and emissions factors updates</div>
               </div>
-              <label class="toggle">
-                <input type="checkbox" />
+              <label class="toggle" for="noti-pref-updates">
+                <input type="checkbox" id="noti-pref-updates" aria-label="System Updates" />
                 <span class="toggle-track"></span>
                 <span class="toggle-thumb"></span>
               </label>

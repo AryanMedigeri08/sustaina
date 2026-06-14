@@ -57,26 +57,26 @@ export function renderSmartPurchaseAdvisor(container) {
           
           <!-- Templates Row -->
           <div>
-            <label class="text-xs text-secondary font-semibold mb-2 style-block">Quick Templates</label>
-            <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+            <span class="text-xs text-secondary font-semibold mb-2 style-block" id="templates-label">Quick Templates</span>
+            <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;" role="group" aria-labelledby="templates-label">
               ${TEMPLATES.map((tmpl, idx) => `
-                <button class="btn btn-ghost btn-sm btn-tmpl" data-idx="${idx}" style="padding: var(--space-2) var(--space-3); font-size: var(--text-xs); display: flex; align-items: center; gap: var(--space-2);">
-                  <span style="display: flex; align-items: center; justify-content: center; color: var(--green-700);">${icons[tmpl.icon]}</span> <span>${tmpl.name.split(' ')[0]}</span>
+                <button class="btn btn-ghost btn-sm btn-tmpl" data-idx="${idx}" aria-label="Use quick template for ${tmpl.name}" style="padding: var(--space-2) var(--space-3); font-size: var(--text-xs); display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="display: flex; align-items: center; justify-content: center; color: var(--green-700);" aria-hidden="true">${icons[tmpl.icon]}</span> <span>${tmpl.name.split(' ')[0]}</span>
                 </button>
               `).join('')}
             </div>
           </div>
-
+ 
           <!-- Inputs -->
           <div style="display: flex; flex-direction: column; gap: var(--space-4);">
             <div>
-              <label class="text-xs text-secondary font-semibold mb-1 style-block">Product Name</label>
+              <label for="pa-name" class="text-xs text-secondary font-semibold mb-1 style-block">Product Name</label>
               <input type="text" id="pa-name" placeholder="e.g. Electric Bike" value="Electric Bike" />
             </div>
             
             <div class="grid-2" style="gap: var(--space-3);">
               <div>
-                <label class="text-xs text-secondary font-semibold mb-1 style-block">Category</label>
+                <label for="pa-category" class="text-xs text-secondary font-semibold mb-1 style-block">Category</label>
                 <select id="pa-category">
                   <option value="transport">Transportation</option>
                   <option value="solar">Solar Energy Systems</option>
@@ -85,22 +85,22 @@ export function renderSmartPurchaseAdvisor(container) {
                 </select>
               </div>
               <div>
-                <label class="text-xs text-secondary font-semibold mb-1 style-block">Expected Lifetime (years)</label>
+                <label for="pa-lifetime" class="text-xs text-secondary font-semibold mb-1 style-block">Expected Lifetime (years)</label>
                 <input type="number" id="pa-lifetime" placeholder="e.g. 10" value="10" />
               </div>
             </div>
-
+ 
             <div class="grid-3" style="gap: var(--space-2);">
               <div>
-                <label class="text-xs text-secondary font-semibold mb-1 style-block">Product Cost (₹)</label>
+                <label for="pa-cost" class="text-xs text-secondary font-semibold mb-1 style-block">Product Cost (₹)</label>
                 <input type="number" id="pa-cost" placeholder="e.g. 120000" value="120000" />
               </div>
               <div>
-                <label class="text-xs text-secondary font-semibold mb-1 style-block">Running Cost (₹/mo)</label>
+                <label for="pa-running" class="text-xs text-secondary font-semibold mb-1 style-block">Running Cost (₹/mo)</label>
                 <input type="number" id="pa-running" placeholder="e.g. 200" value="200" />
               </div>
               <div>
-                <label class="text-xs text-secondary font-semibold mb-1 style-block">Energy Use (kWh/yr)</label>
+                <label for="pa-energy" class="text-xs text-secondary font-semibold mb-1 style-block">Energy Use (kWh/yr)</label>
                 <input type="number" id="pa-energy" placeholder="e.g. 300" value="300" />
               </div>
             </div>

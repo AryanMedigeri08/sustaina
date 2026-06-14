@@ -45,31 +45,54 @@ export function renderSidebar(container) {
       </div>
 
       <div class="sidebar-nav">
-        <div class="sidebar-nav-section">
+        <ul class="sidebar-nav-list" aria-label="Main Navigation">
           ${NAV_ITEMS.map(item => `
-            <div class="sidebar-nav-item ${currentRoute === item.route ? 'active' : ''}" 
-                 data-route="${item.route}" id="nav-${item.id}">
-              <span class="sidebar-nav-icon">${icons[item.icon]}</span>
-              <span>${item.label}</span>
-            </div>
+            <li class="sidebar-nav-item-wrapper">
+              <button class="sidebar-nav-item ${currentRoute === item.route ? 'active' : ''}" 
+                      data-route="${item.route}" id="nav-${item.id}"
+                      aria-label="${item.label}"
+                      ${currentRoute === item.route ? 'aria-current="page"' : ''}>
+                <span class="sidebar-nav-icon" aria-hidden="true">${icons[item.icon]}</span>
+                <span>${item.label}</span>
+              </button>
+            </li>
           `).join('')}
-        </div>
+        </ul>
       </div>
 
       <div class="sidebar-footer">
-        <div class="sidebar-footer-item">
-          <span class="sidebar-nav-icon">${icons.help}</span>
+        <button class="sidebar-footer-item" aria-label="Help and Support">
+          <span class="sidebar-nav-icon" aria-hidden="true">${icons.help}</span>
           <span>Help & Support</span>
-        </div>
+        </button>
       </div>
     </nav>
   `;
 
-  // Add click handlers
+  // Add click and keydown handlers
   container.querySelectorAll('.sidebar-nav-item').forEach(item => {
-    item.addEventListener('click', () => {
+    const navigateRoute = () => {
       const route = item.dataset.route;
       navigate(route);
+    };
+    item.addEventListener('click', navigateRoute);
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        navigateRoute();
+      }
     });
+  });
+
+  // Help support focus support
+  const helpBtn = container.querySelector('.sidebar-footer-item');
+  helpBtn?.addEventListener('click', () => {
+    alert('Support system coming soon!');
+  });
+  helpBtn?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      alert('Support system coming soon!');
+    }
   });
 }

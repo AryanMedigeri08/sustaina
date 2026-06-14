@@ -36,6 +36,10 @@ export function createDonutChart(canvasId, data) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
+  // Accessibility
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', `Donut chart showing ${data.map(d => `${d.label}: ${d.value}%`).join(', ')}`);
+
   chartInstances[canvasId] = new Chart(canvas, {
     type: 'doughnut',
     data: {
@@ -201,4 +205,6 @@ export function createBarChart(canvasId, labels, values, label = 'Emissions') {
 // Cleanup all charts
 export function destroyAllCharts() {
   Object.keys(chartInstances).forEach(destroyChart);
+}
+rt);
 }

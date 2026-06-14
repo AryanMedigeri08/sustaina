@@ -60,16 +60,16 @@ function renderActiveForm() {
         <button class="tab-auth active" id="tab-login" style="flex: 1; padding: var(--space-2); border-radius: var(--radius-sm); border: none; font-size: var(--text-sm); font-weight: 600; cursor: pointer; background: var(--bg-card); color: var(--text-primary);">Log In</button>
         <button class="tab-auth" id="tab-signup" style="flex: 1; padding: var(--space-2); border-radius: var(--radius-sm); border: none; font-size: var(--text-sm); font-weight: 500; cursor: pointer; background: transparent; color: var(--text-secondary);">Sign Up</button>
       </div>
-
+ 
       <div style="display: flex; flex-direction: column; gap: var(--space-4);" class="page-enter">
-        <div id="auth-error-msg" class="text-xs text-danger" style="color: var(--accent-red); font-weight: 600; text-align: center;"></div>
+        <div id="auth-error-msg" class="text-xs text-danger" style="color: var(--accent-red); font-weight: 600; text-align: center;" aria-live="polite"></div>
         <div>
-          <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Email Address</label>
-          <input type="email" id="auth-email" placeholder="email@example.com" required />
+          <label for="login-email" class="text-xs text-secondary font-semibold mb-1" style="display: block;">Email Address</label>
+          <input type="email" id="login-email" placeholder="email@example.com" required />
         </div>
         <div>
-          <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Password</label>
-          <input type="password" id="auth-password" placeholder="••••••••" required />
+          <label for="login-password" class="text-xs text-secondary font-semibold mb-1" style="display: block;">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" required />
         </div>
         <div style="text-align: right;">
           <button id="forgot-password-link" style="font-size: var(--text-xs); color: var(--green-700); cursor: pointer; background: none; border: none;">Forgot Password?</button>
@@ -83,20 +83,20 @@ function renderActiveForm() {
         <button class="tab-auth" id="tab-login" style="flex: 1; padding: var(--space-2); border-radius: var(--radius-sm); border: none; font-size: var(--text-sm); font-weight: 500; cursor: pointer; background: transparent; color: var(--text-secondary);">Log In</button>
         <button class="tab-auth active" id="tab-signup" style="flex: 1; padding: var(--space-2); border-radius: var(--radius-sm); border: none; font-size: var(--text-sm); font-weight: 600; cursor: pointer; background: var(--bg-card); color: var(--text-primary);">Sign Up</button>
       </div>
-
+ 
       <div style="display: flex; flex-direction: column; gap: var(--space-4);" class="page-enter">
-        <div id="auth-error-msg" class="text-xs text-danger" style="color: var(--accent-red); font-weight: 600; text-align: center;"></div>
+        <div id="auth-error-msg" class="text-xs text-danger" style="color: var(--accent-red); font-weight: 600; text-align: center;" aria-live="polite"></div>
         <div>
-          <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Full Name</label>
-          <input type="text" id="auth-name" placeholder="Aryan Medigeri" required />
+          <label for="signup-name" class="text-xs text-secondary font-semibold mb-1" style="display: block;">Full Name</label>
+          <input type="text" id="signup-name" placeholder="Aryan Medigeri" required />
         </div>
         <div>
-          <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Email Address</label>
-          <input type="email" id="auth-email" placeholder="email@example.com" required />
+          <label for="signup-email" class="text-xs text-secondary font-semibold mb-1" style="display: block;">Email Address</label>
+          <input type="email" id="signup-email" placeholder="email@example.com" required />
         </div>
         <div>
-          <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Password</label>
-          <input type="password" id="auth-password" placeholder="••••••••" required />
+          <label for="signup-password" class="text-xs text-secondary font-semibold mb-1" style="display: block;">Password</label>
+          <input type="password" id="signup-password" placeholder="••••••••" required />
         </div>
         <button class="btn btn-primary btn-xl" id="btn-submit-auth" style="margin-top: var(--space-2);">Create Account</button>
       </div>
@@ -107,10 +107,10 @@ function renderActiveForm() {
       <div style="display: flex; flex-direction: column; gap: var(--space-4);" class="page-enter">
         <h3 style="font-family: var(--font-heading); font-size: var(--text-md); font-weight: 700; text-align: center;">Reset Password</h3>
         <p class="text-xs text-secondary text-center" style="margin-bottom: var(--space-2);">Enter your email address and we'll send a password recovery link.</p>
-        <div id="auth-error-msg" class="text-xs text-danger" style="color: var(--accent-red); font-weight: 600; text-align: center;"></div>
+        <div id="auth-error-msg" class="text-xs text-danger" style="color: var(--accent-red); font-weight: 600; text-align: center;" aria-live="polite"></div>
         <div>
-          <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Email Address</label>
-          <input type="email" id="auth-email" placeholder="email@example.com" required />
+          <label for="reset-email" class="text-xs text-secondary font-semibold mb-1" style="display: block;">Email Address</label>
+          <input type="email" id="reset-email" placeholder="email@example.com" required />
         </div>
         <button class="btn btn-primary btn-xl" id="btn-submit-auth">Send Recovery Email</button>
         <div style="text-align: center;">
@@ -170,9 +170,21 @@ function attachAuthListeners(container) {
   // Form Submit Action
   document.getElementById('btn-submit-auth')?.addEventListener('click', async () => {
     const errorMsg = document.getElementById('auth-error-msg');
-    const email = document.getElementById('auth-email')?.value?.trim();
-    const password = document.getElementById('auth-password')?.value;
-    const name = document.getElementById('auth-name')?.value?.trim();
+    
+    let email = '';
+    let password = '';
+    let name = '';
+
+    if (activeTab === 'login') {
+      email = document.getElementById('login-email')?.value?.trim();
+      password = document.getElementById('login-password')?.value;
+    } else if (activeTab === 'signup') {
+      name = document.getElementById('signup-name')?.value?.trim();
+      email = document.getElementById('signup-email')?.value?.trim();
+      password = document.getElementById('signup-password')?.value;
+    } else if (activeTab === 'reset') {
+      email = document.getElementById('reset-email')?.value?.trim();
+    }
 
     if (!email) {
       errorMsg.textContent = 'Please enter an email address.';

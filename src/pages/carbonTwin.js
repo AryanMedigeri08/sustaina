@@ -99,24 +99,24 @@ export function renderCarbonTwin(container) {
           <!-- 1. Transport Slider -->
           <div style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-4);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-              <span class="font-semibold text-sm">Reduce daily travel distance</span>
+              <label for="sim-reduce-km" class="font-semibold text-sm" style="cursor: pointer;">Reduce daily travel distance</label>
               <span id="slider-val-km" class="text-sm font-bold text-accent">0%</span>
             </div>
             <input type="range" id="sim-reduce-km" min="0" max="80" value="0" style="width: 100%; cursor: pointer;" />
             <div style="display: flex; align-items: center; margin-top: var(--space-2); gap: var(--space-2);">
-              <label class="toggle" id="toggle-eco-transit">
-                <input type="checkbox" id="sim-eco-transit" />
+              <label class="toggle" id="toggle-eco-transit" for="sim-eco-transit">
+                <input type="checkbox" id="sim-eco-transit" aria-label="Switch daily travel mode to Eco transit" />
                 <span class="toggle-track"></span>
                 <span class="toggle-thumb"></span>
               </label>
-              <span class="text-xs text-secondary">Switch daily travel mode to Eco transit (Metro / Bus)</span>
+              <label for="sim-eco-transit" class="text-xs text-secondary" style="cursor: pointer;">Switch daily travel mode to Eco transit (Metro / Bus)</label>
             </div>
           </div>
-
+ 
           <!-- 2. Diet Selection -->
           <div style="border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-4);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-              <span class="font-semibold text-sm">Switch dietary habits</span>
+              <label for="sim-diet" class="font-semibold text-sm" style="cursor: pointer;">Switch dietary habits</label>
               <span id="diet-val" class="text-sm font-bold text-accent" style="text-transform: capitalize;">${profile.diet || 'vegetarian'}</span>
             </div>
             <select id="sim-diet" style="max-width: 300px;">
@@ -126,21 +126,21 @@ export function renderCarbonTwin(container) {
               <option value="non_vegetarian" ${profile.diet === 'non_vegetarian' ? 'selected' : ''}>Regular Non-Vegetarian</option>
             </select>
           </div>
-
+ 
           <!-- 3. Energy Toggles -->
           <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-              <span class="font-semibold text-sm">Reduce electricity usage</span>
+              <label for="sim-reduce-elec" class="font-semibold text-sm" style="cursor: pointer;">Reduce electricity usage</label>
               <span id="slider-val-elec" class="text-sm font-bold text-accent">0%</span>
             </div>
             <input type="range" id="sim-reduce-elec" min="0" max="50" value="0" style="width: 100%; cursor: pointer;" />
             <div style="display: flex; align-items: center; margin-top: var(--space-3); gap: var(--space-2);">
-              <label class="toggle" id="toggle-solar">
-                <input type="checkbox" id="sim-solar" />
+              <label class="toggle" id="toggle-solar" for="sim-solar">
+                <input type="checkbox" id="sim-solar" aria-label="Adopt Rooftop Solar Panels" />
                 <span class="toggle-track"></span>
                 <span class="toggle-thumb"></span>
               </label>
-              <span class="text-xs text-secondary">Adopt Rooftop Solar Panels (cuts grid emissions to 0)</span>
+              <label for="sim-solar" class="text-xs text-secondary" style="cursor: pointer;">Adopt Rooftop Solar Panels (cuts grid emissions to 0)</label>
             </div>
           </div>
         </div>

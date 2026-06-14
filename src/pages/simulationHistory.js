@@ -56,7 +56,7 @@ function renderPage(container) {
                   return `
                     <tr style="border-bottom: 1px solid var(--border-light); hover: background-color: var(--neutral-50);">
                       <td style="padding: var(--space-3);">
-                        <input type="checkbox" class="sim-compare-chk" data-id="${sim.id}" ${isChecked ? 'checked' : ''} />
+                        <input type="checkbox" class="sim-compare-chk" data-id="${sim.id}" ${isChecked ? 'checked' : ''} aria-label="Compare ${sim.scenario_name || 'scenario'}" />
                       </td>
                       <td style="padding: var(--space-3); color: var(--text-secondary);">${formatDate(sim.created_at)}</td>
                       <td style="padding: var(--space-3); font-weight: 600; color: var(--green-800);">${sim.scenario_name || 'Lifestyle Scenario'}</td>

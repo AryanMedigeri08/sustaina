@@ -170,10 +170,10 @@ function renderWelcome(container) {
           <!-- Language Selector -->
           <div style="max-width: 400px; margin: 0 auto var(--space-6); text-align: left;" class="card">
             <h4 style="margin-bottom: var(--space-3); font-weight: 700; text-align: center; color: var(--green-800);">Select Arya's Language</h4>
-            <div style="display: flex; gap: var(--space-3); justify-content: center;">
-              <button class="btn btn-primary lang-btn" data-lang="english" style="background: var(--green-600); color: white; flex: 1; font-weight: 600; padding: var(--space-3); border-radius: var(--radius-md); border: none;">English</button>
-              <button class="btn btn-secondary lang-btn" data-lang="hindi" style="flex: 1; font-weight: 600; padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border-default);">Hindi (हिंदी)</button>
-              <button class="btn btn-secondary lang-btn" data-lang="hinglish" style="flex: 1; font-weight: 600; padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border-default);">Hinglish</button>
+            <div style="display: flex; gap: var(--space-3); justify-content: center;" role="group" aria-label="Arya's Language Selector">
+              <button class="btn btn-primary lang-btn" data-lang="english" aria-pressed="true" style="background: var(--green-600); color: white; flex: 1; font-weight: 600; padding: var(--space-3); border-radius: var(--radius-md); border: none;">English</button>
+              <button class="btn btn-secondary lang-btn" data-lang="hindi" aria-pressed="false" style="flex: 1; font-weight: 600; padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border-default);">Hindi (हिंदी)</button>
+              <button class="btn btn-secondary lang-btn" data-lang="hinglish" aria-pressed="false" style="flex: 1; font-weight: 600; padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border-default);">Hinglish</button>
             </div>
           </div>
 
@@ -200,12 +200,14 @@ function renderWelcome(container) {
         b.style.background = '';
         b.style.color = '';
         b.style.border = '1px solid var(--border-default)';
+        b.setAttribute('aria-pressed', 'false');
       });
       btn.classList.remove('btn-secondary');
       btn.classList.add('btn-primary');
       btn.style.background = 'var(--green-600)';
       btn.style.color = 'white';
       btn.style.border = 'none';
+      btn.setAttribute('aria-pressed', 'true');
       selectedLang = btn.dataset.lang;
     });
   });
@@ -312,21 +314,22 @@ function renderConversation(container) {
               <div class="transcript-label" id="transcript-header">Press mic and start speaking...</div>
               <input type="text" class="transcript-text" id="voice-input-box" 
                      placeholder="Type your response here if microphone is off..." 
+                     aria-labelledby="transcript-header"
                      style="border: none; background: transparent; padding: var(--space-2) 0; width: 100%;" />
             </div>
-            <button id="send-text-btn" class="btn btn-ghost btn-icon" style="opacity: 0.7;">
+            <button id="send-text-btn" class="btn btn-ghost btn-icon" style="opacity: 0.7;" aria-label="Send response">
               ${icons.arrow_right || '➔'}
             </button>
           </div>
-
+ 
           <!-- Mic button -->
           <div style="text-align: center;">
-            <div class="speak-btn" id="voice-mic-btn" title="Start listening">
+            <div class="speak-btn" id="voice-mic-btn" title="Start listening" role="button" tabindex="0" aria-label="Microphone button" aria-pressed="false">
               ${icons.mic}
             </div>
             <div class="speak-btn-label" id="mic-status-text">Tap to Speak</div>
           </div>
-
+ 
           <div style="text-align: center; margin-top: var(--space-6);">
             <button class="btn btn-secondary" id="direct-to-review-btn">
               Skip to Review ➔
@@ -336,21 +339,21 @@ function renderConversation(container) {
       </div>
     </div>
   `;
-
+ 
   setupEndSession();
   updateVisualChecklist();
-
+ 
   // Attach event handlers
   const voiceInput = document.getElementById('voice-input-box');
   const sendBtn = document.getElementById('send-text-btn');
   const micBtn = document.getElementById('voice-mic-btn');
   const skipBtn = document.getElementById('direct-to-review-btn');
-
+ 
   // Trigger conversational flow start after a brief moment
   setTimeout(() => {
     runConversationStep(container);
   }, 500);
-
+ 
   // Keyboard Submission
   voiceInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && voiceInput.value.trim()) {
@@ -358,14 +361,14 @@ function renderConversation(container) {
       voiceInput.value = '';
     }
   });
-
+ 
   sendBtn.addEventListener('click', () => {
     if (voiceInput.value.trim()) {
       handleUserSpeechSubmit(container, voiceInput.value.trim());
       voiceInput.value = '';
     }
   });
-
+ 
   // Direct skip to review
   skipBtn.addEventListener('click', () => {
     stopSpeaking();
@@ -373,20 +376,28 @@ function renderConversation(container) {
     currentStep = 2; // review
     renderOnboarding(container);
   });
-
-  // Mic Button Toggle
-  micBtn.addEventListener('click', () => {
+ 
+  // Mic Button Toggle Action
+  const toggleMicAction = () => {
     if (isAryaSpeaking) {
       // If Arya is speaking, stop it
       stopSpeaking();
       isAryaSpeaking = false;
       document.getElementById('onboarding-waveform').style.opacity = '0.2';
     }
-
+ 
     if (isListening) {
       stopListening();
     } else {
       startListening(container);
+    }
+  };
+
+  micBtn.addEventListener('click', toggleMicAction);
+  micBtn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleMicAction();
     }
   });
 }
@@ -671,19 +682,19 @@ function renderReview(container) {
 
           <div class="review-table">
             <div class="review-row">
-              <span class="review-label">Name</span>
+              <label for="rev-input-name" class="review-label">Name</label>
               <input type="text" id="rev-input-name" class="review-value-input" value="${data.name || 'Aryan Medigeri'}" style="text-align: right; border: none; background: transparent; width: 180px; font-weight: 600;" />
             </div>
             <div class="review-row">
-              <span class="review-label">City</span>
+              <label for="rev-input-city" class="review-label">City</label>
               <input type="text" id="rev-input-city" class="review-value-input" value="${data.city || 'Pune'}" style="text-align: right; border: none; background: transparent; width: 180px; font-weight: 600;" />
             </div>
             <div class="review-row">
-              <span class="review-label">Household Size</span>
+              <label for="rev-input-house" class="review-label">Household Size</label>
               <input type="number" id="rev-input-house" class="review-value-input" value="${data.householdSize || 4}" style="text-align: right; border: none; background: transparent; width: 80px; font-weight: 600;" />
             </div>
             <div class="review-row">
-              <span class="review-label">Transport Mode</span>
+              <label for="rev-input-trans" class="review-label">Transport Mode</label>
               <select id="rev-input-trans" style="border: none; background: transparent; width: auto; font-weight: 600; text-align: right; direction: rtl;">
                 <option value="bike" ${data.primaryTransport === 'bike' ? 'selected' : ''}>Bike (Two-wheeler)</option>
                 <option value="car_petrol" ${data.primaryTransport === 'car_petrol' ? 'selected' : ''}>Car (Petrol)</option>
@@ -694,11 +705,11 @@ function renderReview(container) {
               </select>
             </div>
             <div class="review-row">
-              <span class="review-label">Daily Commute (km)</span>
+              <label for="rev-input-km" class="review-label">Daily Commute (km)</label>
               <input type="number" id="rev-input-km" class="review-value-input" value="${data.dailyTransportKm || 15}" style="text-align: right; border: none; background: transparent; width: 80px; font-weight: 600;" />
             </div>
             <div class="review-row">
-              <span class="review-label">Diet</span>
+              <label for="rev-input-diet" class="review-label">Diet</label>
               <select id="rev-input-diet" style="border: none; background: transparent; width: auto; font-weight: 600; text-align: right; direction: rtl;">
                 <option value="vegetarian" ${data.diet === 'vegetarian' ? 'selected' : ''}>Vegetarian</option>
                 <option value="vegan" ${data.diet === 'vegan' ? 'selected' : ''}>Vegan</option>
@@ -707,7 +718,7 @@ function renderReview(container) {
               </select>
             </div>
             <div class="review-row">
-              <span class="review-label">Electricity (units/mo)</span>
+              <label for="rev-input-elec" class="review-label">Electricity (units/mo)</label>
               <input type="number" id="rev-input-elec" class="review-value-input" value="${data.electricityUnits || 280}" style="text-align: right; border: none; background: transparent; width: 80px; font-weight: 600;" />
             </div>
           </div>
@@ -763,15 +774,21 @@ function renderGoalsSelection(container) {
           <h2 style="font-size: var(--text-2xl); margin-bottom: var(--space-2);">What are your sustainability goals?</h2>
           <p class="text-secondary mb-6">Select all that apply.</p>
 
-          <div class="goals-grid">
-            ${GOAL_OPTIONS.map(goal => `
-              <div class="goal-option ${onboardingData.goals.includes(goal.value) ? 'selected' : ''}" data-value="${goal.value}">
-                <div class="goal-option-icon" style="color: var(--green-700); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;">${icons[goal.icon]}</div>
-                <span class="goal-option-text">${goal.text}</span>
-              </div>
-            `).join('')}
+          <div class="goals-grid" role="group" aria-label="Select sustainability goals">
+            ${GOAL_OPTIONS.map(goal => {
+              const isSelected = onboardingData.goals.includes(goal.value);
+              return `
+                <button class="goal-option ${isSelected ? 'selected' : ''}" 
+                     data-value="${goal.value}"
+                     aria-pressed="${isSelected ? 'true' : 'false'}"
+                     aria-label="${goal.text}">
+                  <div class="goal-option-icon" style="color: var(--green-700); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;" aria-hidden="true">${icons[goal.icon]}</div>
+                  <span class="goal-option-text">${goal.text}</span>
+                </button>
+              `;
+            }).join('')}
           </div>
-
+ 
           <div class="flex items-center justify-center gap-4 mt-8">
             <button class="btn btn-ghost btn-lg" id="goals-back">Back</button>
             <button class="btn btn-primary btn-lg" id="goals-continue">Continue</button>
@@ -780,19 +797,22 @@ function renderGoalsSelection(container) {
       </div>
     </div>
   `;
-
+ 
   setupEndSession();
-
+ 
   container.querySelectorAll('.goal-option').forEach(item => {
-    item.addEventListener('click', () => {
+    const toggleGoal = () => {
       item.classList.toggle('selected');
       const value = item.dataset.value;
+      const isSelected = item.classList.contains('selected');
+      item.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
       if (onboardingData.goals.includes(value)) {
         onboardingData.goals = onboardingData.goals.filter(g => g !== value);
       } else {
         onboardingData.goals.push(value);
       }
-    });
+    };
+    item.addEventListener('click', toggleGoal);
   });
 
   document.getElementById('goals-back')?.addEventListener('click', () => {

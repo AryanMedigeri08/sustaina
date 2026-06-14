@@ -4,23 +4,23 @@
 
 import { getSettings, setSetting, getProfile } from '../state/store.js';
 
-function toggle(id, label, checked, onChange) {
+function toggle(id, label, checked) {
   return `
     <div class="settings-row">
-      <span class="settings-label">${label}</span>
-      <label class="toggle" id="toggle-${id}">
-        <input type="checkbox" ${checked ? 'checked' : ''} data-setting="${id}" />
+      <label for="setting-chk-${id}" class="settings-label" style="cursor: pointer;">${label}</label>
+      <label class="toggle" id="toggle-${id}" for="setting-chk-${id}">
+        <input type="checkbox" id="setting-chk-${id}" ${checked ? 'checked' : ''} data-setting="${id}" aria-label="${label}" />
         <span class="toggle-track"></span>
         <span class="toggle-thumb"></span>
       </label>
     </div>
   `;
 }
-
+ 
 export function renderSettings(container) {
   const settings = getSettings();
   const profile = getProfile();
-
+ 
   container.innerHTML = `
     <div class="page-enter">
       <div class="page-header">
@@ -29,7 +29,7 @@ export function renderSettings(container) {
           <p class="page-subtitle">Customize your Sustaina experience.</p>
         </div>
       </div>
-
+ 
       <!-- Account Section -->
       <div class="card mb-6 stagger-1">
         <div class="settings-section">
@@ -48,7 +48,7 @@ export function renderSettings(container) {
           </div>
         </div>
       </div>
-
+ 
       <!-- Language Section -->
       <div class="card mb-6 stagger-2">
         <div class="settings-section">
@@ -65,7 +65,7 @@ export function renderSettings(container) {
           </div>
         </div>
       </div>
-
+ 
       <!-- Notifications Section -->
       <div class="card mb-6 stagger-3">
         <div class="settings-section">
@@ -75,7 +75,7 @@ export function renderSettings(container) {
           ${toggle('weeklyReport', 'Weekly Report', settings.weeklyReport)}
         </div>
       </div>
-
+ 
       <!-- Help Section -->
       <div class="card mb-6 stagger-4">
         <div class="settings-section">
@@ -98,7 +98,7 @@ export function renderSettings(container) {
           </div>
         </div>
       </div>
-
+ 
       <!-- App Info -->
       <div class="card mb-6 stagger-5">
         <div class="settings-section">
@@ -110,7 +110,7 @@ export function renderSettings(container) {
           ${toggle('darkMode', 'Dark Mode', settings.darkMode)}
         </div>
       </div>
-
+ 
       <!-- Supabase Cloud Sync Section -->
       <div class="card stagger-6">
         <div class="settings-section">
@@ -120,11 +120,11 @@ export function renderSettings(container) {
           </p>
           <div style="display: flex; flex-direction: column; gap: var(--space-4);">
             <div>
-              <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Supabase Project URL</label>
+              <label for="settings-supabase-url" class="text-xs text-secondary font-semibold mb-1" style="display: block;">Supabase Project URL</label>
               <input type="text" id="settings-supabase-url" placeholder="https://your-project.supabase.co" value="${settings.supabaseUrl || ''}" style="width: 100%; padding: var(--space-2); border-radius: var(--radius-sm); border: 1px solid var(--border-light);" />
             </div>
             <div>
-              <label class="text-xs text-secondary font-semibold mb-1" style="display: block;">Supabase Anon Key</label>
+              <label for="settings-supabase-key" class="text-xs text-secondary font-semibold mb-1" style="display: block;">Supabase Anon Key</label>
               <input type="password" id="settings-supabase-key" placeholder="eyJhbGciOi..." value="${settings.supabaseAnonKey || ''}" style="width: 100%; padding: var(--space-2); border-radius: var(--radius-sm); border: 1px solid var(--border-light);" />
             </div>
             <div>

@@ -48,7 +48,7 @@ const pageRenderers = {
   'analytics': renderAnalytics,
 };
 
-function renderPage(route) {
+export function renderPage(route) {
   const sidebarContainer = document.getElementById('sidebar-container');
   const topbarContainer = document.getElementById('topbar-container');
   const pageContent = document.getElementById('page-content');
