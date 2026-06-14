@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/181</span>
+                <span class='fraction'>0/182</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/181</span>
+                <span class='fraction'>0/182</span>
             </div>
         
             
@@ -244,7 +244,9 @@
 <a name='L179'></a><a href='#L179'>179</a>
 <a name='L180'></a><a href='#L180'>180</a>
 <a name='L181'></a><a href='#L181'>181</a>
-<a name='L182'></a><a href='#L182'>182</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -431,6 +433,7 @@
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >import { getActivities, addActivity } from '../state/store.js';</span>
 <span class="cstat-no" title="statement not covered" >import { icons } from '../components/icons.js';</span>
+<span class="cstat-no" title="statement not covered" >import { formatCarbon } from '../utils/formatters.js';</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >const CATEGORIES = ['All', 'Transport', 'Food', 'Home Energy', 'Shopping', 'Waste'];</span>
 <span class="cstat-no" title="statement not covered" >const CATEGORY_MAP = { 'All': 'all', 'Transport': 'transport', 'Food': 'food', 'Home Energy': 'energy', 'Shopping': 'shopping', 'Waste': 'waste' };</span>
@@ -446,6 +449,10 @@
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >let activeCategory = 'all';</span>
 <span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Renders the Activity Log page.</span>
+<span class="cstat-no" title="statement not covered" > * @param {HTMLElement} container </span>
+<span class="cstat-no" title="statement not covered" > */</span>
 <span class="cstat-no" title="statement not covered" >export function renderActivityLog(container) {</span>
 <span class="cstat-no" title="statement not covered" >  const activities = getActivities();</span>
 <span class="cstat-no" title="statement not covered" >  const filtered = activeCategory === 'all' ? activities : activities.filter(a =&gt; a.category === activeCategory);</span>
@@ -475,10 +482,10 @@
 <span class="cstat-no" title="statement not covered" >        &lt;h3 class="card-title mb-4"&gt;Quick Add&lt;/h3&gt;</span>
 <span class="cstat-no" title="statement not covered" >        &lt;div class="quick-add-grid" role="group" aria-label="Quick add activities"&gt;</span>
 <span class="cstat-no" title="statement not covered" >          ${QUICK_ADD.map(item =&gt; `</span>
-<span class="cstat-no" title="statement not covered" >            &lt;div class="quick-add-item" data-quick="${item.label}" role="button" tabindex="0" aria-label="Quick add ${item.label}"&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;button class="quick-add-item" data-quick="${item.label}" aria-label="Quick add ${item.label}"&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;span class="quick-add-icon" style="display: flex; align-items: center; justify-content: center; color: var(--green-700);" aria-hidden="true"&gt;${icons.transport}&lt;/span&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;span class="quick-add-label"&gt;${item.label}&lt;/span&gt;</span>
-<span class="cstat-no" title="statement not covered" >            &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;/button&gt;</span>
 <span class="cstat-no" title="statement not covered" >          `).join('')}</span>
 <span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
@@ -497,7 +504,7 @@
 <span class="cstat-no" title="statement not covered" >                &lt;div class="activity-detail"&gt;${activity.detail}&lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;div class="activity-co2"&gt;</span>
-<span class="cstat-no" title="statement not covered" >                &lt;div class="activity-co2-value"&gt;${activity.co2} kg CO₂e&lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >                &lt;div class="activity-co2-value"&gt;${formatCarbon(activity.co2)}&lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >              &lt;div class="activity-time"&gt;${activity.time}&lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >            &lt;/div&gt;</span>
@@ -511,7 +518,7 @@
 <span class="cstat-no" title="statement not covered" >    &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >  `;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Tab click handlers</span>
+<span class="cstat-no" title="statement not covered" >  // Attach handlers</span>
 <span class="cstat-no" title="statement not covered" >  container.querySelectorAll('.tab-underline').forEach(tab =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    tab.addEventListener('click', () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >      activeCategory = tab.dataset.category;</span>
@@ -519,21 +526,22 @@
 <span class="cstat-no" title="statement not covered" >    });</span>
 <span class="cstat-no" title="statement not covered" >  });</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Quick add click handlers</span>
 <span class="cstat-no" title="statement not covered" >  container.querySelectorAll('.quick-add-item').forEach(item =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    item.addEventListener('click', () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      showAddActivityModal(container, item.dataset.quick);</span>
-<span class="cstat-no" title="statement not covered" >    });</span>
+<span class="cstat-no" title="statement not covered" >    item.addEventListener('click', () =&gt; showAddActivityModal(container, item.dataset.quick));</span>
 <span class="cstat-no" title="statement not covered" >  });</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Add activity button</span>
-<span class="cstat-no" title="statement not covered" >  document.getElementById('add-activity-btn')?.addEventListener('click', () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    showAddActivityModal(container);</span>
-<span class="cstat-no" title="statement not covered" >  });</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('add-activity-btn')?.addEventListener('click', () =&gt; showAddActivityModal(container));</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 <span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Shows the modal to add a new activity.</span>
+<span class="cstat-no" title="statement not covered" > * @param {HTMLElement} pageContainer </span>
+<span class="cstat-no" title="statement not covered" > * @param {string} prefill </span>
+<span class="cstat-no" title="statement not covered" > */</span>
 <span class="cstat-no" title="statement not covered" >function showAddActivityModal(pageContainer, prefill = '') {</span>
 <span class="cstat-no" title="statement not covered" >  const overlay = document.getElementById('modal-overlay');</span>
+<span class="cstat-no" title="statement not covered" >  if (!overlay) return;</span>
+<span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >  overlay.classList.remove('hidden');</span>
 <span class="cstat-no" title="statement not covered" >  overlay.innerHTML = `</span>
 <span class="cstat-no" title="statement not covered" >    &lt;div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"&gt;</span>
@@ -569,19 +577,15 @@
 <span class="cstat-no" title="statement not covered" >    &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >  `;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  document.getElementById('modal-close').addEventListener('click', () =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  const closeModal = () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    overlay.classList.add('hidden');</span>
 <span class="cstat-no" title="statement not covered" >    overlay.innerHTML = '';</span>
-<span class="cstat-no" title="statement not covered" >  });</span>
+<span class="cstat-no" title="statement not covered" >  };</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  overlay.addEventListener('click', (e) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    if (e.target === overlay) {</span>
-<span class="cstat-no" title="statement not covered" >      overlay.classList.add('hidden');</span>
-<span class="cstat-no" title="statement not covered" >      overlay.innerHTML = '';</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  });</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('modal-close')?.addEventListener('click', closeModal);</span>
+<span class="cstat-no" title="statement not covered" >  overlay.addEventListener('click', (e) =&gt; { if (e.target === overlay) closeModal(); });</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  document.getElementById('modal-save').addEventListener('click', () =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  document.getElementById('modal-save')?.addEventListener('click', () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    const name = document.getElementById('modal-name').value || 'Activity';</span>
 <span class="cstat-no" title="statement not covered" >    const category = document.getElementById('modal-category').value;</span>
 <span class="cstat-no" title="statement not covered" >    const quantity = document.getElementById('modal-quantity').value || 0;</span>
@@ -601,8 +605,7 @@
 <span class="cstat-no" title="statement not covered" >      date: new Date().toISOString().split('T')[0],</span>
 <span class="cstat-no" title="statement not covered" >    });</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    overlay.classList.add('hidden');</span>
-<span class="cstat-no" title="statement not covered" >    overlay.innerHTML = '';</span>
+<span class="cstat-no" title="statement not covered" >    closeModal();</span>
 <span class="cstat-no" title="statement not covered" >    renderActivityLog(pageContainer);</span>
 <span class="cstat-no" title="statement not covered" >  });</span>
 <span class="cstat-no" title="statement not covered" >}</span>
@@ -613,7 +616,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-14T19:00:08.520Z
+                at 2026-06-14T19:28:18.290Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -7,6 +7,7 @@ import { DASHBOARD_SUMMARY, CATEGORY_BREAKDOWN, EMISSION_TREND, AI_INSIGHT } fro
 import { createDonutChart, createLineChart } from '../components/charts.js';
 import { icons } from '../components/icons.js';
 import { navigate } from '../router.js';
+import { formatCurrency } from '../utils/formatters.js';
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -134,7 +135,7 @@ export function renderDashboard(container) {
           <div class="impact-card-icon gold">💰</div>
           <div>
             <div class="metric-label">Money Saved</div>
-            <div class="impact-card-value">₹${summary.moneySaved.value}</div>
+            <div class="impact-card-value">${formatCurrency(summary.moneySaved.value)}</div>
             <div class="impact-card-trend">${summary.moneySaved.trend}</div>
           </div>
         </div>

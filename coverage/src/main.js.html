@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/126</span>
+                <span class='fraction'>0/125</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/126</span>
+                <span class='fraction'>0/125</span>
             </div>
         
             
@@ -314,10 +314,14 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >// ═══════════════════════════════════════════<span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" ></span></span></span>
 <span class="cstat-no" title="statement not covered" >// SUSTAINA — Main Entry Point</span>
 <span class="cstat-no" title="statement not covered" >// ═══════════════════════════════════════════</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Main application controller and initialization.</span>
+<span class="cstat-no" title="statement not covered" > */</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >import './index.css';</span>
 <span class="cstat-no" title="statement not covered" >import { initRouter, navigate } from './router.js';</span>
@@ -365,25 +369,28 @@
 <span class="cstat-no" title="statement not covered" >  'analytics': renderAnalytics,</span>
 <span class="cstat-no" title="statement not covered" >};</span>
 <span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Renders the page for a given route.</span>
+<span class="cstat-no" title="statement not covered" > * @param {string} route </span>
+<span class="cstat-no" title="statement not covered" > */</span>
 <span class="cstat-no" title="statement not covered" >export function renderPage(route) {</span>
 <span class="cstat-no" title="statement not covered" >  const sidebarContainer = document.getElementById('sidebar-container');</span>
 <span class="cstat-no" title="statement not covered" >  const topbarContainer = document.getElementById('topbar-container');</span>
 <span class="cstat-no" title="statement not covered" >  const pageContent = document.getElementById('page-content');</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Clean up charts</span>
+<span class="cstat-no" title="statement not covered" >  // Clean up resources</span>
 <span class="cstat-no" title="statement not covered" >  destroyAllCharts();</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >  if (route === 'onboarding') {</span>
-<span class="cstat-no" title="statement not covered" >    // Onboarding handles its own layout</span>
 <span class="cstat-no" title="statement not covered" >    renderOnboarding(pageContent);</span>
 <span class="cstat-no" title="statement not covered" >    return;</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Render shell components</span>
+<span class="cstat-no" title="statement not covered" >  // Render shell</span>
 <span class="cstat-no" title="statement not covered" >  renderSidebar(sidebarContainer);</span>
 <span class="cstat-no" title="statement not covered" >  renderTopbar(topbarContainer);</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Render page</span>
+<span class="cstat-no" title="statement not covered" >  // Render content</span>
 <span class="cstat-no" title="statement not covered" >  const renderer = pageRenderers[route];</span>
 <span class="cstat-no" title="statement not covered" >  if (renderer) {</span>
 <span class="cstat-no" title="statement not covered" >    renderer(pageContent);</span>
@@ -395,52 +402,45 @@
 <span class="cstat-no" title="statement not covered" >// ─── App Init ─── //</span>
 <span class="cstat-no" title="statement not covered" >let initialized = false;</span>
 <span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Initializes the application state, theme, and router.</span>
+<span class="cstat-no" title="statement not covered" > */</span>
 <span class="cstat-no" title="statement not covered" >async function init() {</span>
 <span class="cstat-no" title="statement not covered" >  if (initialized) return;</span>
 <span class="cstat-no" title="statement not covered" >  initialized = true;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Initialize theme from localStorage</span>
+<span class="cstat-no" title="statement not covered" >  // Theme</span>
 <span class="cstat-no" title="statement not covered" >  const savedTheme = localStorage.getItem('theme') || 'light';</span>
 <span class="cstat-no" title="statement not covered" >  document.documentElement.setAttribute('data-theme', savedTheme);</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Handle ?reset URL param — clears localStorage and restarts</span>
+<span class="cstat-no" title="statement not covered" >  // Params</span>
 <span class="cstat-no" title="statement not covered" >  const urlParams = new URLSearchParams(window.location.search);</span>
 <span class="cstat-no" title="statement not covered" >  if (urlParams.has('reset')) {</span>
 <span class="cstat-no" title="statement not covered" >    resetState();</span>
-<span class="cstat-no" title="statement not covered" >    // Remove the ?reset param from URL cleanly</span>
 <span class="cstat-no" title="statement not covered" >    window.history.replaceState({}, '', window.location.pathname + '#onboarding');</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Initialize Supabase session (loads from localStorage first, then syncs from cloud)</span>
+<span class="cstat-no" title="statement not covered" >  // Session</span>
 <span class="cstat-no" title="statement not covered" >  await initStoreSession();</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // If user explicitly navigated to #onboarding, always show it</span>
+<span class="cstat-no" title="statement not covered" >  // Router</span>
 <span class="cstat-no" title="statement not covered" >  const hash = window.location.hash.slice(1);</span>
-<span class="cstat-no" title="statement not covered" >  if (hash === 'onboarding') {</span>
-<span class="cstat-no" title="statement not covered" >    const initialRoute = initRouter(renderPage);</span>
-<span class="cstat-no" title="statement not covered" >    renderPage('onboarding');</span>
-<span class="cstat-no" title="statement not covered" >    return;</span>
-<span class="cstat-no" title="statement not covered" >  }</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Check if onboarding is needed (first-time user)</span>
-<span class="cstat-no" title="statement not covered" >  if (!isOnboardingComplete()) {</span>
+<span class="cstat-no" title="statement not covered" >  if (hash === 'onboarding' || !isOnboardingComplete()) {</span>
 <span class="cstat-no" title="statement not covered" >    window.location.hash = 'onboarding';</span>
-<span class="cstat-no" title="statement not covered" >    const initialRoute = initRouter(renderPage);</span>
+<span class="cstat-no" title="statement not covered" >    initRouter(renderPage);</span>
 <span class="cstat-no" title="statement not covered" >    renderPage('onboarding');</span>
-<span class="cstat-no" title="statement not covered" >    return;</span>
+<span class="cstat-no" title="statement not covered" >  } else {</span>
+<span class="cstat-no" title="statement not covered" >    const initialRoute = initRouter(renderPage);</span>
+<span class="cstat-no" title="statement not covered" >    renderPage(initialRoute);</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >  // Normal app flow</span>
-<span class="cstat-no" title="statement not covered" >  const initialRoute = initRouter(renderPage);</span>
-<span class="cstat-no" title="statement not covered" >  renderPage(initialRoute);</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >// Start the app — use a single entry point</span>
 <span class="cstat-no" title="statement not covered" >if (document.readyState === 'loading') {</span>
 <span class="cstat-no" title="statement not covered" >  document.addEventListener('DOMContentLoaded', init);</span>
 <span class="cstat-no" title="statement not covered" >} else {</span>
 <span class="cstat-no" title="statement not covered" >  init();</span>
 <span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -448,7 +448,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-14T19:00:08.520Z
+                at 2026-06-14T19:28:18.290Z
             </div>
         <script src="../prettify.js"></script>
         <script>

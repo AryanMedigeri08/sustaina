@@ -2,6 +2,10 @@
 // SUSTAINA — Main Entry Point
 // ═══════════════════════════════════════════
 
+/**
+ * Main application controller and initialization.
+ */
+
 import './index.css';
 import { initRouter, navigate } from './router.js';
 import { renderSidebar } from './components/sidebar.js';
@@ -48,25 +52,28 @@ const pageRenderers = {
   'analytics': renderAnalytics,
 };
 
+/**
+ * Renders the page for a given route.
+ * @param {string} route 
+ */
 export function renderPage(route) {
   const sidebarContainer = document.getElementById('sidebar-container');
   const topbarContainer = document.getElementById('topbar-container');
   const pageContent = document.getElementById('page-content');
 
-  // Clean up charts
+  // Clean up resources
   destroyAllCharts();
 
   if (route === 'onboarding') {
-    // Onboarding handles its own layout
     renderOnboarding(pageContent);
     return;
   }
 
-  // Render shell components
+  // Render shell
   renderSidebar(sidebarContainer);
   renderTopbar(topbarContainer);
 
-  // Render page
+  // Render content
   const renderer = pageRenderers[route];
   if (renderer) {
     renderer(pageContent);
@@ -78,49 +85,42 @@ export function renderPage(route) {
 // ─── App Init ─── //
 let initialized = false;
 
+/**
+ * Initializes the application state, theme, and router.
+ */
 async function init() {
   if (initialized) return;
   initialized = true;
 
-  // Initialize theme from localStorage
+  // Theme
   const savedTheme = localStorage.getItem('theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
 
-  // Handle ?reset URL param — clears localStorage and restarts
+  // Params
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has('reset')) {
     resetState();
-    // Remove the ?reset param from URL cleanly
     window.history.replaceState({}, '', window.location.pathname + '#onboarding');
   }
 
-  // Initialize Supabase session (loads from localStorage first, then syncs from cloud)
+  // Session
   await initStoreSession();
 
-  // If user explicitly navigated to #onboarding, always show it
+  // Router
   const hash = window.location.hash.slice(1);
-  if (hash === 'onboarding') {
-    const initialRoute = initRouter(renderPage);
-    renderPage('onboarding');
-    return;
-  }
-
-  // Check if onboarding is needed (first-time user)
-  if (!isOnboardingComplete()) {
+  if (hash === 'onboarding' || !isOnboardingComplete()) {
     window.location.hash = 'onboarding';
-    const initialRoute = initRouter(renderPage);
+    initRouter(renderPage);
     renderPage('onboarding');
-    return;
+  } else {
+    const initialRoute = initRouter(renderPage);
+    renderPage(initialRoute);
   }
-
-  // Normal app flow
-  const initialRoute = initRouter(renderPage);
-  renderPage(initialRoute);
 }
 
-// Start the app — use a single entry point
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
   init();
 }
+

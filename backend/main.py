@@ -1,11 +1,16 @@
 import os
 import json
 import urllib.request
+import base64
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 from dotenv import load_dotenv
+
+# Internal imports
+from utils import pcm_to_wav
+from gemini_service import call_gemini_flash
 
 # Load environment variables from root .env
 load_dotenv()
@@ -15,102 +20,17 @@ app = FastAPI(title="Sustaina V3 API Backend")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://sustaina-delta.vercel.app/", 
+    allow_origins=[
+        "https://sustaina-delta.vercel.app/", 
         "http://localhost:3000",
-        "http://localhost:5173",],  # For local MVP development
+        "http://localhost:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-
-def pcm_to_wav(pcm_data: bytes, sample_rate: int = 24000, channels: int = 1, bit_depth: int = 16) -> bytes:
-    """Prepends a 44-byte WAV header to raw PCM bytes."""
-    num_samples = len(pcm_data)
-    block_align = channels * (bit_depth // 8)
-    byte_rate = sample_rate * block_align
-    
-    header = bytearray(44)
-    # RIFF header
-    header[0:4] = b'RIFF'
-    header[4:8] = (36 + num_samples).to_bytes(4, 'little')
-    header[8:12] = b'WAVE'
-    # "fmt " subchunk
-    header[12:16] = b'fmt '
-    header[16:20] = (16).to_bytes(4, 'little') # subchunk1size (16 for PCM)
-    header[20:22] = (1).to_bytes(2, 'little')  # audio format (1 for PCM)
-    header[22:24] = channels.to_bytes(2, 'little')
-    header[24:28] = sample_rate.to_bytes(4, 'little')
-    header[28:32] = byte_rate.to_bytes(4, 'little')
-    header[32:34] = block_align.to_bytes(2, 'little')
-    header[34:36] = bit_depth.to_bytes(2, 'little')
-    # "data" subchunk
-    header[36:40] = b'data'
-    header[40:44] = num_samples.to_bytes(4, 'little')
-    
-    return bytes(header) + pcm_data
-
-def call_gemini_flash(prompt: str, system_instruction: str = None) -> dict:
-    """Helper function to call Gemini via REST API with fallback support."""
-    api_key = GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY", "")
-    if not api_key:
-        raise HTTPException(
-            status_code=500, 
-            detail="GEMINI_API_KEY is not configured on the server."
-        )
-    
-    models_to_try = [
-        "gemini-2.5-flash",
-        "gemini-flash-latest",
-        "gemini-3.1-flash-lite"
-    ]
-    
-    last_error = ""
-    for model_name in models_to_try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
-        
-        payload = {
-            "contents": [
-                {
-                    "parts": [
-                        {"text": prompt}
-                    ]
-                }
-            ],
-            "generationConfig": {
-                "responseMimeType": "application/json"
-            }
-        }
-        
-        if system_instruction:
-            payload["systemInstruction"] = {
-                "parts": [
-                    {"text": system_instruction}
-                ]
-            }
-            
-        try:
-            req = urllib.request.Request(
-                url,
-                data=json.dumps(payload).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-                method="POST"
-            )
-            with urllib.request.urlopen(req) as response:
-                res_data = json.loads(response.read().decode("utf-8"))
-                candidate = res_data.get("candidates", [{}])[0]
-                text = candidate.get("content", {}).get("parts", [{}])[0].get("text", "")
-                return json.loads(text.strip())
-        except urllib.error.HTTPError as e:
-            last_error = e.read().decode("utf-8")
-            print(f"Gemini API Error with model {model_name}: {last_error}")
-        except Exception as e:
-            last_error = str(e)
-            print(f"Server Error with model {model_name} during Gemini Call: {last_error}")
-            
-    raise HTTPException(status_code=500, detail=f"All Gemini text models failed. Last error: {last_error}")
-
 
 # ─── Pydantic Models for Requests ─── #
 
@@ -160,7 +80,7 @@ class OnboardingNextQuestionRequest(BaseModel):
 def health_check():
     return {
         "status": "healthy",
-        "has_key": bool(GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY"))
+        "has_key": bool(GEMINI_API_KEY)
     }
 
 @app.post("/api/extract-profile")
@@ -202,7 +122,7 @@ def extract_profile(req: OnboardingExtractionRequest):
         f"Extract and return updated parameters in the Response Schema JSON format."
     )
     
-    return call_gemini_flash(prompt, system_prompt)
+    return call_gemini_flash(prompt, system_prompt, GEMINI_API_KEY)
 
 @app.post("/api/onboarding-next-question")
 def onboarding_next_question(req: OnboardingNextQuestionRequest):
@@ -261,7 +181,7 @@ def onboarding_next_question(req: OnboardingNextQuestionRequest):
         "}"
     )
     prompt = "Generate the next question based on the missing information and conversation history."
-    return call_gemini_flash(prompt, system_prompt)
+    return call_gemini_flash(prompt, system_prompt, GEMINI_API_KEY)
 
 @app.post("/api/coach-recommendations")
 def coach_recommendations(req: CoachRequest):
@@ -328,7 +248,7 @@ def coach_recommendations(req: CoachRequest):
         "Generate the weekly plan recommendations."
     )
     
-    return call_gemini_flash(prompt, system_prompt)
+    return call_gemini_flash(prompt, system_prompt, GEMINI_API_KEY)
 
 @app.post("/api/purchase-advice")
 def purchase_advice(req: PurchaseRequest):
@@ -353,10 +273,10 @@ def purchase_advice(req: PurchaseRequest):
         "Evaluate this purchase."
     )
     
-    return call_gemini_flash(prompt, system_prompt)
+    return call_gemini_flash(prompt, system_prompt, GEMINI_API_KEY)
 
 
-# ─── V3 AI Report & Advanced Memory Endpoints ─── #
+# ─── AI Report & Advanced Memory Endpoints ─── #
 
 @app.post("/api/generate-report")
 def generate_report(req: ReportRequest):
@@ -388,7 +308,7 @@ def generate_report(req: ReportRequest):
         "Generate a structured, professional report."
     )
     
-    return call_gemini_flash(prompt, system_prompt)
+    return call_gemini_flash(prompt, system_prompt, GEMINI_API_KEY)
 
 @app.post("/api/update-memory")
 def update_memory(req: UpdateMemoryRequest):
@@ -422,7 +342,7 @@ def update_memory(req: UpdateMemoryRequest):
         "Analyze these patterns and update preferences."
     )
     
-    return call_gemini_flash(prompt, system_prompt)
+    return call_gemini_flash(prompt, system_prompt, GEMINI_API_KEY)
 
 @app.post("/api/speak")
 def speak(req: SpeakRequest):
@@ -434,8 +354,9 @@ def speak(req: SpeakRequest):
         )
     
     models_to_try = [
-        "gemini-2.5-flash-preview-tts",
-        "gemini-3.1-flash-tts-preview"
+        "gemini-2.0-flash-preview-tts",
+        "gemini-3.1-flash-tts-preview",
+        "gemini-2.0-flash-exp-tts"
     ]
     
     last_error = ""
@@ -462,7 +383,6 @@ def speak(req: SpeakRequest):
         }
         
         try:
-            import base64
             req_obj = urllib.request.Request(
                 url,
                 data=json.dumps(payload).encode("utf-8"),

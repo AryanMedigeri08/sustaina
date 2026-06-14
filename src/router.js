@@ -2,6 +2,10 @@
 // SUSTAINA — Hash-based SPA Router
 // ═══════════════════════════════════════════
 
+/**
+ * SPA Router module for handling hash-based navigation.
+ */
+
 let currentRoute = 'home';
 let renderCallback = null;
 
@@ -12,10 +16,18 @@ const routes = [
   'notifications', 'analytics'
 ];
 
+/**
+ * Returns the current active route.
+ * @returns {string}
+ */
 export function getCurrentRoute() {
   return currentRoute;
 }
 
+/**
+ * Navigates to a specific route and updates the URL hash.
+ * @param {string} route 
+ */
 export function navigate(route) {
   if (routes.includes(route)) {
     currentRoute = route;
@@ -24,6 +36,11 @@ export function navigate(route) {
   }
 }
 
+/**
+ * Initializes the router with a render callback.
+ * @param {Function} callback 
+ * @returns {string} Initial route
+ */
 export function initRouter(callback) {
   renderCallback = callback;
 
@@ -46,3 +63,4 @@ export function initRouter(callback) {
 
   return currentRoute;
 }
+

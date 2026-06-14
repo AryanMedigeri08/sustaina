@@ -4,6 +4,7 @@
 
 import { getActivities, addActivity } from '../state/store.js';
 import { icons } from '../components/icons.js';
+import { formatCarbon } from '../utils/formatters.js';
 
 const CATEGORIES = ['All', 'Transport', 'Food', 'Home Energy', 'Shopping', 'Waste'];
 const CATEGORY_MAP = { 'All': 'all', 'Transport': 'transport', 'Food': 'food', 'Home Energy': 'energy', 'Shopping': 'shopping', 'Waste': 'waste' };
@@ -19,6 +20,10 @@ const QUICK_ADD = [
 
 let activeCategory = 'all';
 
+/**
+ * Renders the Activity Log page.
+ * @param {HTMLElement} container 
+ */
 export function renderActivityLog(container) {
   const activities = getActivities();
   const filtered = activeCategory === 'all' ? activities : activities.filter(a => a.category === activeCategory);
@@ -48,10 +53,10 @@ export function renderActivityLog(container) {
         <h3 class="card-title mb-4">Quick Add</h3>
         <div class="quick-add-grid" role="group" aria-label="Quick add activities">
           ${QUICK_ADD.map(item => `
-            <div class="quick-add-item" data-quick="${item.label}" role="button" tabindex="0" aria-label="Quick add ${item.label}">
+            <button class="quick-add-item" data-quick="${item.label}" aria-label="Quick add ${item.label}">
               <span class="quick-add-icon" style="display: flex; align-items: center; justify-content: center; color: var(--green-700);" aria-hidden="true">${icons.transport}</span>
               <span class="quick-add-label">${item.label}</span>
-            </div>
+            </button>
           `).join('')}
         </div>
       </div>
@@ -70,7 +75,7 @@ export function renderActivityLog(container) {
                 <div class="activity-detail">${activity.detail}</div>
               </div>
               <div class="activity-co2">
-                <div class="activity-co2-value">${activity.co2} kg CO₂e</div>
+                <div class="activity-co2-value">${formatCarbon(activity.co2)}</div>
               </div>
               <div class="activity-time">${activity.time}</div>
             </div>
@@ -84,7 +89,7 @@ export function renderActivityLog(container) {
     </div>
   `;
 
-  // Tab click handlers
+  // Attach handlers
   container.querySelectorAll('.tab-underline').forEach(tab => {
     tab.addEventListener('click', () => {
       activeCategory = tab.dataset.category;
@@ -92,21 +97,22 @@ export function renderActivityLog(container) {
     });
   });
 
-  // Quick add click handlers
   container.querySelectorAll('.quick-add-item').forEach(item => {
-    item.addEventListener('click', () => {
-      showAddActivityModal(container, item.dataset.quick);
-    });
+    item.addEventListener('click', () => showAddActivityModal(container, item.dataset.quick));
   });
 
-  // Add activity button
-  document.getElementById('add-activity-btn')?.addEventListener('click', () => {
-    showAddActivityModal(container);
-  });
+  document.getElementById('add-activity-btn')?.addEventListener('click', () => showAddActivityModal(container));
 }
 
+/**
+ * Shows the modal to add a new activity.
+ * @param {HTMLElement} pageContainer 
+ * @param {string} prefill 
+ */
 function showAddActivityModal(pageContainer, prefill = '') {
   const overlay = document.getElementById('modal-overlay');
+  if (!overlay) return;
+
   overlay.classList.remove('hidden');
   overlay.innerHTML = `
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -142,19 +148,15 @@ function showAddActivityModal(pageContainer, prefill = '') {
     </div>
   `;
 
-  document.getElementById('modal-close').addEventListener('click', () => {
+  const closeModal = () => {
     overlay.classList.add('hidden');
     overlay.innerHTML = '';
-  });
+  };
 
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      overlay.classList.add('hidden');
-      overlay.innerHTML = '';
-    }
-  });
+  document.getElementById('modal-close')?.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
 
-  document.getElementById('modal-save').addEventListener('click', () => {
+  document.getElementById('modal-save')?.addEventListener('click', () => {
     const name = document.getElementById('modal-name').value || 'Activity';
     const category = document.getElementById('modal-category').value;
     const quantity = document.getElementById('modal-quantity').value || 0;
@@ -174,8 +176,7 @@ function showAddActivityModal(pageContainer, prefill = '') {
       date: new Date().toISOString().split('T')[0],
     });
 
-    overlay.classList.add('hidden');
-    overlay.innerHTML = '';
+    closeModal();
     renderActivityLog(pageContainer);
   });
 }

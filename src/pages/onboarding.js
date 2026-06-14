@@ -1,6 +1,5 @@
 // ═══════════════════════════════════════════
 // SUSTAINA — Voice Onboarding Flow
-// Conversational setup using Web Speech APIs and Gemini Flash Extraction
 // ═══════════════════════════════════════════
 
 import { setOnboardingComplete, logTimelineEvent, getState } from '../state/store.js';
@@ -16,42 +15,18 @@ import {
   getNextOnboardingQuestion
 } from '../services/gemini.js';
 
-// ─── Step Definitions ─── //
-const STEPS = [
-  { key: 'welcome', label: 'Welcome' },
-  { key: 'conversation', label: 'Voice Onboarding' },
-  { key: 'review', label: 'Review & Complete' },
-  { key: 'goals', label: 'Your Goals' },
-  { key: 'complete', label: "You're all set!" },
-];
+// Constants and Utils
+import { 
+  ONBOARDING_STEPS, 
+  GOAL_OPTIONS, 
+  INITIAL_ONBOARDING_DATA, 
+  ARYA_STATUS_MESSAGES 
+} from '../constants/onboarding.js';
+import { formatCurrency, formatCarbon } from '../utils/formatters.js';
 
-const GOAL_OPTIONS = [
-  { icon: 'globe', text: 'Reduce my carbon footprint', value: 'reduce_footprint' },
-  { icon: 'money', text: 'Save money on monthly bills', value: 'save_money' },
-  { icon: 'transport', text: 'Use public transport more', value: 'public_transport' },
-  { icon: 'food', text: 'Eat more sustainably', value: 'eat_sustainable' },
-  { icon: 'waste', text: 'Reduce waste', value: 'reduce_waste' },
-  { icon: 'leaf', text: 'Live a more minimal lifestyle', value: 'minimal_lifestyle' },
-  { icon: 'energy', text: 'Switch to clean energy', value: 'clean_energy' },
-  { icon: 'tree', text: 'Plant more trees', value: 'plant_trees' },
-];
-
+// State
 let currentStep = 0;
-let onboardingData = {
-  language: 'english',
-  name: '',
-  city: '',
-  householdSize: null,
-  homeType: '',
-  primaryTransport: '',
-  diet: '',
-  workType: '',
-  electricitySource: '',
-  electricityUnits: null,
-  lpgCylinders: null,
-  dailyTransportKm: null,
-  goals: [],
-};
+let onboardingData = { ...INITIAL_ONBOARDING_DATA };
 
 // Conversational engine state
 let activeRecognition = null;
@@ -61,21 +36,14 @@ let conversationHistory = [];
 let pendingExtraction = false;
 let pendingQuestion = false;
 
-// ─── Render Onboarding ─── //
+/**
+ * Main entry point for rendering the onboarding flow.
+ * @param {HTMLElement} container 
+ */
 export function renderOnboarding(container) {
-  // Hide sidebar/topbar for onboarding
-  const sidebarEl = document.getElementById('sidebar-container');
-  const topbarEl = document.getElementById('topbar-container');
-  const mainContent = document.getElementById('main-content');
-  const pageContent = document.getElementById('page-content');
-  
-  if (sidebarEl) sidebarEl.style.display = 'none';
-  if (topbarEl) topbarEl.style.display = 'none';
-  if (mainContent) mainContent.style.marginLeft = '0';
-  if (pageContent) { pageContent.style.padding = '0'; pageContent.style.maxWidth = 'none'; }
+  toggleAppShell(false);
 
-  const step = STEPS[currentStep];
-
+  const step = ONBOARDING_STEPS[currentStep];
   switch (step.key) {
     case 'welcome': renderWelcome(container); break;
     case 'conversation': renderConversation(container); break;
@@ -85,22 +53,34 @@ export function renderOnboarding(container) {
   }
 }
 
-function restoreLayout() {
+/**
+ * Toggles the visibility of the main app shell components.
+ * @param {boolean} show 
+ */
+function toggleAppShell(show) {
   const sidebarEl = document.getElementById('sidebar-container');
   const topbarEl = document.getElementById('topbar-container');
   const mainContent = document.getElementById('main-content');
   const pageContent = document.getElementById('page-content');
   
-  if (sidebarEl) sidebarEl.style.display = '';
-  if (topbarEl) topbarEl.style.display = '';
-  if (mainContent) mainContent.style.marginLeft = '';
-  if (pageContent) { pageContent.style.padding = ''; pageContent.style.maxWidth = ''; }
+  const display = show ? '' : 'none';
+  const marginLeft = show ? '' : '0';
+  const padding = show ? '' : '0';
+  const maxWidth = show ? '' : 'none';
+
+  if (sidebarEl) sidebarEl.style.display = display;
+  if (topbarEl) topbarEl.style.display = display;
+  if (mainContent) mainContent.style.marginLeft = marginLeft;
+  if (pageContent) { 
+    pageContent.style.padding = padding; 
+    pageContent.style.maxWidth = maxWidth; 
+  }
 }
 
 function getStepInfo() {
   return `
     <div class="onboarding-step-info">
-      <span class="onboarding-step-label">Step ${currentStep + 1} of ${STEPS.length}</span>
+      <span class="onboarding-step-label">Step ${currentStep + 1} of ${ONBOARDING_STEPS.length}</span>
       <button class="onboarding-end-session" id="end-session">End Session</button>
     </div>
   `;
@@ -109,9 +89,9 @@ function getStepInfo() {
 function getProgressBar() {
   return `
     <div class="onboarding-progress" style="max-width: 500px; margin: 0 auto var(--space-6);">
-      ${STEPS.map((_, i) => `
+      ${ONBOARDING_STEPS.map((_, i) => `
         <div class="onboarding-progress-step ${i < currentStep ? 'completed' : ''} ${i === currentStep ? 'active' : ''}"></div>
-        ${i < STEPS.length - 1 ? `<div class="onboarding-progress-line ${i < currentStep ? 'completed' : ''}"></div>` : ''}
+        ${i < ONBOARDING_STEPS.length - 1 ? `<div class="onboarding-progress-line ${i < currentStep ? 'completed' : ''}"></div>` : ''}
       `).join('')}
     </div>
   `;
@@ -120,54 +100,40 @@ function getProgressBar() {
 function setupEndSession() {
   document.getElementById('end-session')?.addEventListener('click', () => {
     stopSpeaking();
-    if (activeRecognition) {
-      activeRecognition.stop();
-    }
+    if (activeRecognition) activeRecognition.stop();
     currentStep = 0;
-    restoreLayout();
+    toggleAppShell(true);
     navigate('home');
   });
 }
 
+/**
+ * Shared sidebar layout for onboarding steps.
+ */
+function getOnboardingSidebarHTML() {
+  return `
+    <div class="onboarding-sidebar">
+      <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
+        <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
+      </div>
+      <div id="sidebar-step-content"></div>
+    </div>
+  `;
+}
+
 // ─── Step 1: Welcome ─── //
 function renderWelcome(container) {
-  onboardingData = {
-    language: 'english',
-    name: '',
-    city: '',
-    householdSize: null,
-    homeType: '',
-    primaryTransport: '',
-    diet: '',
-    workType: '',
-    electricitySource: '',
-    electricityUnits: null,
-    lpgCylinders: null,
-    dailyTransportKm: null,
-    goals: [],
-  };
+  onboardingData = { ...INITIAL_ONBOARDING_DATA };
   let selectedLang = 'english';
 
   container.innerHTML = `
     <div class="onboarding-container page-enter">
-      <div class="onboarding-sidebar">
-        <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
-          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
-        </div>
-        <div style="opacity: 0.3; pointer-events: none; display: flex; flex-direction: column; gap: var(--space-2);">
-          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4); display: flex; gap: var(--space-2); align-items: center;">${icons.home} <span>Home</span></div>
-          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4); display: flex; gap: var(--space-2); align-items: center;">${icons.activity} <span>Activity Log</span></div>
-          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4); display: flex; gap: var(--space-2); align-items: center;">${icons.coach} <span>Arya Coach</span></div>
-          <div class="sidebar-nav-item" style="padding: var(--space-3) var(--space-4); display: flex; gap: var(--space-2); align-items: center;">${icons.insights} <span>Insights</span></div>
-        </div>
-      </div>
-
+      ${getOnboardingSidebarHTML()}
       <div class="onboarding-main">
         <div class="onboarding-content">
           <h2 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">Welcome to Sustaina</h2>
           <p class="text-secondary mb-6">Set up your profile conversationally with Arya, your AI voice companion.</p>
 
-          <!-- Language Selector -->
           <div style="max-width: 400px; margin: 0 auto var(--space-6); text-align: left;" class="card">
             <h4 style="margin-bottom: var(--space-3); font-weight: 700; text-align: center; color: var(--green-800);">Select Arya's Language</h4>
             <div style="display: flex; gap: var(--space-3); justify-content: center;" role="group" aria-label="Arya's Language Selector">
@@ -191,43 +157,23 @@ function renderWelcome(container) {
     </div>
   `;
 
-  // Attach language selector listeners
+  // Language buttons
   container.querySelectorAll('.lang-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       container.querySelectorAll('.lang-btn').forEach(b => {
-        b.classList.remove('btn-primary');
-        b.classList.add('btn-secondary');
-        b.style.background = '';
-        b.style.color = '';
-        b.style.border = '1px solid var(--border-default)';
+        b.classList.replace('btn-primary', 'btn-secondary');
+        b.style.background = ''; b.style.color = ''; b.style.border = '1px solid var(--border-default)';
         b.setAttribute('aria-pressed', 'false');
       });
-      btn.classList.remove('btn-secondary');
-      btn.classList.add('btn-primary');
-      btn.style.background = 'var(--green-600)';
-      btn.style.color = 'white';
-      btn.style.border = 'none';
+      btn.classList.replace('btn-secondary', 'btn-primary');
+      btn.style.background = 'var(--green-600)'; btn.style.color = 'white'; btn.style.border = 'none';
       btn.setAttribute('aria-pressed', 'true');
       selectedLang = btn.dataset.lang;
     });
   });
 
   document.getElementById('start-onboarding').addEventListener('click', () => {
-    onboardingData = {
-      language: selectedLang,
-      name: '',
-      city: '',
-      householdSize: null,
-      homeType: '',
-      primaryTransport: '',
-      diet: '',
-      workType: '',
-      electricitySource: '',
-      electricityUnits: null,
-      lpgCylinders: null,
-      dailyTransportKm: null,
-      goals: [],
-    };
+    onboardingData.language = selectedLang;
     currentStep = 1;
     conversationHistory = [];
     pendingQuestion = false;
@@ -236,6 +182,7 @@ function renderWelcome(container) {
 
   document.getElementById('skip-onboarding-btn').addEventListener('click', () => {
     onboardingData = {
+      ...INITIAL_ONBOARDING_DATA,
       language: selectedLang,
       name: 'Aryan Medigeri',
       city: 'Pune',
@@ -250,7 +197,7 @@ function renderWelcome(container) {
       dailyTransportKm: 18,
       goals: ['reduce_footprint', 'save_money'],
     };
-    currentStep = 2; // Jump straight to Review
+    currentStep = 2; 
     renderOnboarding(container);
   });
 }
@@ -259,56 +206,21 @@ function renderWelcome(container) {
 function renderConversation(container) {
   container.innerHTML = `
     <div class="onboarding-container page-enter">
-      <div class="onboarding-sidebar">
-        <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
-          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
-        </div>
-        
-        <!-- Checklist panel -->
-        <div class="card" style="padding: var(--space-4); background: var(--neutral-50);">
-          <h4 style="font-size: var(--text-sm); font-weight: 700; margin-bottom: var(--space-4); color: var(--green-800);">Profile Extraction status</h4>
-          <div class="extraction-list" id="extraction-status" style="margin: 0;">
-            <div class="extraction-item" id="ext-name">
-              <div class="extraction-check">${onboardingData.name ? '✓' : ''}</div>
-              <span>Name: <strong id="val-name">${onboardingData.name || '⏳'}</strong></span>
-            </div>
-            <div class="extraction-item" id="ext-city">
-              <div class="extraction-check">${onboardingData.city ? '✓' : ''}</div>
-              <span>City: <strong id="val-city">${onboardingData.city || '⏳'}</strong></span>
-            </div>
-            <div class="extraction-item" id="ext-transport">
-              <div class="extraction-check">${onboardingData.primaryTransport && onboardingData.dailyTransportKm ? '✓' : ''}</div>
-              <span>Transport: <strong id="val-transport">${onboardingData.primaryTransport ? `${onboardingData.primaryTransport} (${onboardingData.dailyTransportKm}km)` : '⏳'}</strong></span>
-            </div>
-            <div class="extraction-item" id="ext-energy">
-              <div class="extraction-check">${onboardingData.electricityUnits ? '✓' : ''}</div>
-              <span>Energy: <strong id="val-energy">${onboardingData.electricityUnits ? `${onboardingData.electricityUnits} units/mo` : '⏳'}</strong></span>
-            </div>
-            <div class="extraction-item" id="ext-household">
-              <div class="extraction-check">${onboardingData.householdSize && onboardingData.diet ? '✓' : ''}</div>
-              <span>Household & Diet: <strong id="val-household">${onboardingData.householdSize ? `${onboardingData.householdSize} people, ${onboardingData.diet || '⏳'}` : '⏳'}</strong></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      ${getOnboardingSidebarHTML()}
       <div class="onboarding-main">
         ${getStepInfo()}
         ${getProgressBar()}
 
         <div class="onboarding-content" style="max-width: 600px; padding: 0 var(--space-4);">
-          <!-- Speech Bubble -->
           <div class="arya-bubble mb-6" style="margin-top: 0;">
             <div class="arya-avatar">🌱</div>
             <div class="arya-message" id="arya-speech-text">Preparing session...</div>
           </div>
 
-          <!-- Waveform Animation -->
           <div class="waveform" id="onboarding-waveform" style="opacity: 0.2;">
             ${Array.from({ length: 14 }, () => '<div class="waveform-bar"></div>').join('')}
           </div>
 
-          <!-- Live Transcript Box -->
           <div class="transcript-box" style="margin-bottom: var(--space-6);">
             <div style="flex: 1;">
               <div class="transcript-label" id="transcript-header">Press mic and start speaking...</div>
@@ -322,7 +234,6 @@ function renderConversation(container) {
             </button>
           </div>
  
-          <!-- Mic button -->
           <div style="text-align: center;">
             <div class="speak-btn" id="voice-mic-btn" title="Start listening" role="button" tabindex="0" aria-label="Microphone button" aria-pressed="false">
               ${icons.mic}
@@ -331,30 +242,32 @@ function renderConversation(container) {
           </div>
  
           <div style="text-align: center; margin-top: var(--space-6);">
-            <button class="btn btn-secondary" id="direct-to-review-btn">
-              Skip to Review ➔
-            </button>
+            <button class="btn btn-secondary" id="direct-to-review-btn">Skip to Review ➔</button>
           </div>
         </div>
       </div>
     </div>
   `;
  
+  const sidebarContent = document.getElementById('sidebar-step-content');
+  if (sidebarContent) {
+    sidebarContent.innerHTML = `
+      <div class="card" style="padding: var(--space-4); background: var(--neutral-50);">
+        <h4 style="font-size: var(--text-sm); font-weight: 700; margin-bottom: var(--space-4); color: var(--green-800);">Profile Extraction status</h4>
+        <div class="extraction-list" id="extraction-status" style="margin: 0;"></div>
+      </div>
+    `;
+  }
+
   setupEndSession();
   updateVisualChecklist();
  
-  // Attach event handlers
+  // Handlers
   const voiceInput = document.getElementById('voice-input-box');
-  const sendBtn = document.getElementById('send-text-btn');
   const micBtn = document.getElementById('voice-mic-btn');
-  const skipBtn = document.getElementById('direct-to-review-btn');
+
+  setTimeout(() => runConversationStep(container), 500);
  
-  // Trigger conversational flow start after a brief moment
-  setTimeout(() => {
-    runConversationStep(container);
-  }, 500);
- 
-  // Keyboard Submission
   voiceInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && voiceInput.value.trim()) {
       handleUserSpeechSubmit(container, voiceInput.value.trim());
@@ -362,316 +275,161 @@ function renderConversation(container) {
     }
   });
  
-  sendBtn.addEventListener('click', () => {
+  document.getElementById('send-text-btn').addEventListener('click', () => {
     if (voiceInput.value.trim()) {
       handleUserSpeechSubmit(container, voiceInput.value.trim());
       voiceInput.value = '';
     }
   });
  
-  // Direct skip to review
-  skipBtn.addEventListener('click', () => {
+  document.getElementById('direct-to-review-btn').addEventListener('click', () => {
     stopSpeaking();
     if (activeRecognition) activeRecognition.stop();
-    currentStep = 2; // review
+    currentStep = 2;
     renderOnboarding(container);
   });
  
-  // Mic Button Toggle Action
   const toggleMicAction = () => {
     if (isAryaSpeaking) {
-      // If Arya is speaking, stop it
       stopSpeaking();
       isAryaSpeaking = false;
       document.getElementById('onboarding-waveform').style.opacity = '0.2';
     }
- 
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening(container);
-    }
+    isListening ? stopListening() : startListening(container);
   };
 
   micBtn.addEventListener('click', toggleMicAction);
   micBtn.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleMicAction();
+      e.preventDefault(); toggleMicAction();
     }
   });
 }
 
 function updateVisualChecklist() {
-  const check = (val) => val ? '✓' : '';
-  const itemClass = (val) => val ? 'extraction-item done' : 'extraction-item';
+  const statusEl = document.getElementById('extraction-status');
+  if (!statusEl) return;
 
-  const updateItem = (id, hasVal, valText) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.className = itemClass(hasVal);
-    el.querySelector('.extraction-check').textContent = check(hasVal);
-    el.querySelector('strong').textContent = valText || '⏳';
-  };
-
-  updateItem('ext-name', onboardingData.name, onboardingData.name);
-  updateItem('ext-city', onboardingData.city, onboardingData.city);
-  updateItem('ext-transport', onboardingData.primaryTransport && onboardingData.dailyTransportKm, 
-    onboardingData.primaryTransport ? `${onboardingData.primaryTransport} (${onboardingData.dailyTransportKm}km)` : '');
-  updateItem('ext-energy', onboardingData.electricityUnits,
-    onboardingData.electricityUnits ? `${onboardingData.electricityUnits} units/mo` : '');
-  updateItem('ext-household', onboardingData.householdSize && onboardingData.diet,
-    onboardingData.householdSize ? `${onboardingData.householdSize} people, ${onboardingData.diet || '⏳'}` : '');
-}
-
-function getLoadingStatusMessage() {
-  // Status messages are always in English regardless of selected language
-  const statusMessages = [
-    "Arya is thinking...",
-    "Formulating custom response...",
-    "Synthesizing voice audio...",
-    "Tuning high-quality speech...",
-    "Generating Arya's reply...",
-    "Preparing audio response..."
+  const items = [
+    { label: 'Name', value: onboardingData.name },
+    { label: 'City', value: onboardingData.city },
+    { label: 'Transport', value: onboardingData.primaryTransport && onboardingData.dailyTransportKm ? `${onboardingData.primaryTransport} (${onboardingData.dailyTransportKm}km)` : null },
+    { label: 'Energy', value: onboardingData.electricityUnits ? `${onboardingData.electricityUnits} units/mo` : null },
+    { label: 'Household & Diet', value: onboardingData.householdSize && onboardingData.diet ? `${onboardingData.householdSize} people, ${onboardingData.diet}` : null },
   ];
-  return statusMessages[Math.floor(Math.random() * statusMessages.length)];
+
+  statusEl.innerHTML = items.map(item => `
+    <div class="extraction-item ${item.value ? 'done' : ''}">
+      <div class="extraction-check">${item.value ? '✓' : ''}</div>
+      <span>${item.label}: <strong>${item.value || '⏳'}</strong></span>
+    </div>
+  `).join('');
 }
 
-/**
- * Dialog State Machine. Chooses next question and speaks it.
- */
 async function runConversationStep(container) {
   if (pendingQuestion) return;
   pendingQuestion = true;
 
-  // Show thinking status
   const speechTextEl = document.getElementById('arya-speech-text');
-  if (speechTextEl) {
-    speechTextEl.textContent = getLoadingStatusMessage();
-  }
+  if (speechTextEl) speechTextEl.textContent = ARYA_STATUS_MESSAGES[Math.floor(Math.random() * ARYA_STATUS_MESSAGES.length)];
+  
   const waveformEl = document.getElementById('onboarding-waveform');
-  if (waveformEl) {
-    waveformEl.style.opacity = '0.5';
-  }
+  if (waveformEl) waveformEl.style.opacity = '0.5';
 
-  let question = '';
-  try {
-    question = await getNextOnboardingQuestion(onboardingData, conversationHistory);
-  } catch (err) {
-    console.warn("Failed to get next onboarding question from Gemini:", err);
-  }
-
-  // Local fallback if backend is down or returned null
-  if (!question) {
-    if (!onboardingData.name) {
-      if (onboardingData.language === 'hindi') {
-        question = "नमस्ते! मैं जानती हूँ कि आपका समय बहुत कीमती है, लेकिन मुझे आपको ऑनबोर्ड करने के लिए केवल 2 मिनट चाहिए। शुरू करने के लिए, क्या आप मुझे अपना नाम बता सकते हैं?";
-      } else if (onboardingData.language === 'hinglish') {
-        question = "Hello! Mujhe pata hai aapka time bahut precious hai, lekin mujhe aapko onboard karne ke liye bas 2 minutes chahiye. Chaliye start karte hain, kya aap mujhe apna naam bata sakte hain?";
-      } else {
-        question = "Hello! I know your time is precious, but I just need 2 minutes of it to onboard you. To get started, could you please tell me your name?";
-      }
-    } else if (!onboardingData.city) {
-      if (onboardingData.language === 'hindi') {
-        question = `${onboardingData.name.split(' ')[0]}, आपसे मिलकर खुशी हुई! आप किस शहर में रहते हैं?`;
-      } else if (onboardingData.language === 'hinglish') {
-        question = `${onboardingData.name.split(' ')[0]}, aapse milkar khushi hui! Aap kis city me rehte hain?`;
-      } else {
-        question = `Nice to meet you, ${onboardingData.name.split(' ')[0]}! Which city do you live in?`;
-      }
-    } else if (!onboardingData.primaryTransport || !onboardingData.dailyTransportKm) {
-      if (onboardingData.language === 'hindi') {
-        question = `बढ़िया! आप आमतौर पर काम या कॉलेज के लिए कैसे यात्रा करते हैं, और आपकी दैनिक यात्रा की दूरी किलोमीटर में कितनी है?`;
-      } else if (onboardingData.language === 'hinglish') {
-        question = `Badhiya! Aap work ya college kaise jate hain, aur daily commute distance kitna km hai?`;
-      } else {
-        question = `Great! How do you usually travel to work or college, and what is your daily commute distance in kilometers?`;
-      }
-    } else if (!onboardingData.electricityUnits) {
-      if (onboardingData.language === 'hindi') {
-        question = "समझ गई! आपका औसत मासिक बिजली का उपयोग यूनिट में कितना है?";
-      } else if (onboardingData.language === 'hinglish') {
-        question = "Samajh gayi! Aapka average monthly electricity consumption kitna units hai?";
-      } else {
-        question = "Got it! What is your average monthly electricity consumption in units?";
-      }
-    } else if (!onboardingData.householdSize || !onboardingData.diet) {
-      if (onboardingData.language === 'hindi') {
-        question = "ठीक है। अंत में, आपके घर में कितने लोग रहते हैं, और आपकी खान-पान शैली क्या है — शाकाहारी, वीगन, या मांसाहारी?";
-      } else if (onboardingData.language === 'hinglish') {
-        question = "Theek hai. Finally, aapke ghar me kitne log rehte hain, aur aapki diet kya hai — vegetarian, vegan ya non-vegetarian?";
-      } else {
-        question = "Understood. Finally, how many people live in your household, and what is your diet type — vegetarian, vegan, or non-vegetarian?";
-      }
-    } else {
-      if (onboardingData.language === 'hindi') {
-        question = "उत्कृष्ट! मैंने आपकी सभी जानकारी एकत्र कर ली है। आइए अब हम मिलकर इसकी समीक्षा करें।";
-      } else if (onboardingData.language === 'hinglish') {
-        question = "Perfect! Maine aapki saari details collect kar li hain. Chaliye ab ek baar inko review kar lete hain.";
-      } else {
-        question = "Perfect! I have extracted all your details. Let's review them together now.";
-      }
-    }
-  }
-
+  let question = await getNextOnboardingQuestion(onboardingData, conversationHistory);
   pendingQuestion = false;
 
-  const isCompleted = question.includes("Perfect! I have extracted all your details") || 
+  const isCompleted = question && (
+    question.includes("Perfect! I have extracted all your details") || 
     question.includes("उत्कृष्ट! मैंने आपकी सभी जानकारी") ||
-    question.includes("Perfect! Maine aapki saari details") ||
-    (onboardingData.name && onboardingData.city && onboardingData.primaryTransport && 
-     onboardingData.dailyTransportKm && onboardingData.diet && 
-     onboardingData.householdSize && onboardingData.electricityUnits);
-
-  if (isCompleted) {
-    if (onboardingData.language === 'hindi') {
-      question = "उत्कृष्ट! मैंने आपकी सभी जानकारी एकत्र कर ली है। आइए अब हम मिलकर इसकी समीक्षा करें।";
-    } else if (onboardingData.language === 'hinglish') {
-      question = "Perfect! Maine aapki saari details collect kar li hain. Chaliye ab ek baar inko review kar lete hain.";
-    } else {
-      question = "Perfect! I have extracted all your details. Let's review them together now.";
-    }
-  }
+    question.includes("Perfect! Maine aapki saari details")
+  );
 
   conversationHistory.push(`Arya: ${question}`);
 
-  const playText = question;
-
-  // Speak the question
-  speakText(
-    playText, 
-    // onPlaying: show text and animate waveform
+  speakText(question, 
     () => {
       isAryaSpeaking = true;
-      const speechEl = document.getElementById('arya-speech-text');
-      if (speechEl) speechEl.textContent = playText;
-      const waveEl = document.getElementById('onboarding-waveform');
-      if (waveEl) waveEl.style.opacity = '1';
+      if (speechTextEl) speechTextEl.textContent = question;
+      if (waveformEl) waveformEl.style.opacity = '1';
     },
-    // onEnd
     () => {
       isAryaSpeaking = false;
-      const waveEl = document.getElementById('onboarding-waveform');
-      if (waveEl) waveEl.style.opacity = '0.2';
-      
+      if (waveformEl) waveformEl.style.opacity = '0.2';
       if (isCompleted) {
-        currentStep = 2; // Move to Review
-        renderOnboarding(container);
+        currentStep = 2; renderOnboarding(container);
       } else {
-        // Auto-start recording after question ends
         startListening(container);
       }
-    },
-    // onLoading
-    () => {
-      const speechEl = document.getElementById('arya-speech-text');
-      if (speechEl) speechEl.textContent = getLoadingStatusMessage();
-      const waveEl = document.getElementById('onboarding-waveform');
-      if (waveEl) waveEl.style.opacity = '0.5';
     }
   );
 }
 
 function startListening(container) {
   if (isListening) return;
-
   const statusLabel = document.getElementById('transcript-header');
-  const statusText = document.getElementById('mic-status-text');
   const micBtn = document.getElementById('voice-mic-btn');
 
   activeRecognition = initSpeechRecognition(
     (text) => {
-      // Live transcript updating
       document.getElementById('voice-input-box').value = text;
       statusLabel.textContent = "Listening...";
     },
     () => {
       isListening = false;
       micBtn.classList.remove('recording');
-      statusText.textContent = "Tap to Speak";
       statusLabel.textContent = "Processing speech...";
-      
       const transcript = document.getElementById('voice-input-box').value.trim();
-      if (transcript) {
-        handleUserSpeechSubmit(container, transcript);
-      }
+      if (transcript) handleUserSpeechSubmit(container, transcript);
     },
-    (err) => {
+    () => {
       stopListening();
       statusLabel.textContent = "Microphone error, please type your response.";
     }
   );
 
   if (activeRecognition) {
-    try {
-      activeRecognition.start();
-      isListening = true;
-      micBtn.classList.add('recording');
-      statusText.textContent = "Listening...";
-      statusLabel.textContent = "Speak now...";
-    } catch (e) {
-      console.error('Failed to start speech recognition:', e);
-    }
+    activeRecognition.start();
+    isListening = true;
+    micBtn.classList.add('recording');
+    statusLabel.textContent = "Speak now...";
   }
 }
 
 function stopListening() {
-  if (activeRecognition) {
-    activeRecognition.stop();
-  }
+  if (activeRecognition) activeRecognition.stop();
   isListening = false;
-  const micBtn = document.getElementById('voice-mic-btn');
-  const statusText = document.getElementById('mic-status-text');
-  if (micBtn) micBtn.classList.remove('recording');
-  if (statusText) statusText.textContent = "Tap to Speak";
+  document.getElementById('voice-mic-btn')?.classList.remove('recording');
 }
 
 async function handleUserSpeechSubmit(container, text) {
   if (!text.trim() || pendingExtraction) return;
-
   conversationHistory.push(`User: ${text}`);
-
   pendingExtraction = true;
+  
   const statusLabel = document.getElementById('transcript-header');
   statusLabel.innerHTML = '<span>⚡</span> Gemini extracting details...';
   
-  // Call backend extraction proxy
   const updates = await extractProfileFromVoice(text, onboardingData);
-  
-  // Apply updates
   if (updates) {
-    for (const [key, val] of Object.entries(updates)) {
-      if (val !== null && val !== undefined) {
-        onboardingData[key] = val;
-      }
-    }
+    Object.keys(updates).forEach(key => {
+      if (updates[key] != null) onboardingData[key] = updates[key];
+    });
   }
 
   pendingExtraction = false;
   updateVisualChecklist();
-
-  // Reset transcript display
   document.getElementById('voice-input-box').value = '';
   statusLabel.textContent = "Details extracted! Continuing...";
-
-  // Call next conversational dialog step after a brief delay
-  setTimeout(() => {
-    runConversationStep(container);
-  }, 1000);
+  setTimeout(() => runConversationStep(container), 1000);
 }
 
 // ─── Step 3: Review Table ─── //
 function renderReview(container) {
   const data = onboardingData;
-
   container.innerHTML = `
     <div class="onboarding-container page-enter">
-      <div class="onboarding-sidebar">
-        <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
-          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
-        </div>
-      </div>
-
+      ${getOnboardingSidebarHTML()}
       <div class="onboarding-main">
         ${getStepInfo()}
         ${getProgressBar()}
@@ -681,50 +439,33 @@ function renderReview(container) {
           <p class="text-secondary mb-6">You can edit any value directly if needed.</p>
 
           <div class="review-table">
-            <div class="review-row">
-              <label for="rev-input-name" class="review-label">Name</label>
-              <input type="text" id="rev-input-name" class="review-value-input" value="${data.name || 'Aryan Medigeri'}" style="text-align: right; border: none; background: transparent; width: 180px; font-weight: 600;" />
-            </div>
-            <div class="review-row">
-              <label for="rev-input-city" class="review-label">City</label>
-              <input type="text" id="rev-input-city" class="review-value-input" value="${data.city || 'Pune'}" style="text-align: right; border: none; background: transparent; width: 180px; font-weight: 600;" />
-            </div>
-            <div class="review-row">
-              <label for="rev-input-house" class="review-label">Household Size</label>
-              <input type="number" id="rev-input-house" class="review-value-input" value="${data.householdSize || 4}" style="text-align: right; border: none; background: transparent; width: 80px; font-weight: 600;" />
-            </div>
+            ${renderReviewRow('Name', 'rev-input-name', 'text', data.name || 'Aryan Medigeri')}
+            ${renderReviewRow('City', 'rev-input-city', 'text', data.city || 'Pune')}
+            ${renderReviewRow('Household Size', 'rev-input-house', 'number', data.householdSize || 4)}
             <div class="review-row">
               <label for="rev-input-trans" class="review-label">Transport Mode</label>
               <select id="rev-input-trans" style="border: none; background: transparent; width: auto; font-weight: 600; text-align: right; direction: rtl;">
-                <option value="bike" ${data.primaryTransport === 'bike' ? 'selected' : ''}>Bike (Two-wheeler)</option>
+                <option value="bike" ${data.primaryTransport === 'bike' ? 'selected' : ''}>Bike</option>
                 <option value="car_petrol" ${data.primaryTransport === 'car_petrol' ? 'selected' : ''}>Car (Petrol)</option>
                 <option value="car_diesel" ${data.primaryTransport === 'car_diesel' ? 'selected' : ''}>Car (Diesel)</option>
                 <option value="bus" ${data.primaryTransport === 'bus' ? 'selected' : ''}>Public Bus</option>
                 <option value="metro" ${data.primaryTransport === 'metro' ? 'selected' : ''}>Metro</option>
-                <option value="walk" ${data.primaryTransport === 'walk' ? 'selected' : ''}>Walk</option>
               </select>
             </div>
-            <div class="review-row">
-              <label for="rev-input-km" class="review-label">Daily Commute (km)</label>
-              <input type="number" id="rev-input-km" class="review-value-input" value="${data.dailyTransportKm || 15}" style="text-align: right; border: none; background: transparent; width: 80px; font-weight: 600;" />
-            </div>
+            ${renderReviewRow('Daily Commute (km)', 'rev-input-km', 'number', data.dailyTransportKm || 15)}
             <div class="review-row">
               <label for="rev-input-diet" class="review-label">Diet</label>
               <select id="rev-input-diet" style="border: none; background: transparent; width: auto; font-weight: 600; text-align: right; direction: rtl;">
                 <option value="vegetarian" ${data.diet === 'vegetarian' ? 'selected' : ''}>Vegetarian</option>
                 <option value="vegan" ${data.diet === 'vegan' ? 'selected' : ''}>Vegan</option>
-                <option value="occasional_nonveg" ${data.diet === 'occasional_nonveg' ? 'selected' : ''}>Occasional Non-Veg</option>
                 <option value="non_vegetarian" ${data.diet === 'non_vegetarian' ? 'selected' : ''}>Non-Vegetarian</option>
               </select>
             </div>
-            <div class="review-row">
-              <label for="rev-input-elec" class="review-label">Electricity (units/mo)</label>
-              <input type="number" id="rev-input-elec" class="review-value-input" value="${data.electricityUnits || 280}" style="text-align: right; border: none; background: transparent; width: 80px; font-weight: 600;" />
-            </div>
+            ${renderReviewRow('Electricity (units/mo)', 'rev-input-elec', 'number', data.electricityUnits || 280)}
           </div>
 
           <div class="flex items-center justify-center gap-4 mt-8">
-            <button class="btn btn-ghost btn-lg" id="review-back">Restart Onboarding</button>
+            <button class="btn btn-ghost btn-lg" id="review-back">Restart</button>
             <button class="btn btn-success btn-lg" id="review-confirm">Looks Good</button>
           </div>
         </div>
@@ -735,14 +476,10 @@ function renderReview(container) {
   setupEndSession();
 
   document.getElementById('review-back')?.addEventListener('click', () => {
-    currentStep = 0; // Go back to welcome and select language/reset
-    conversationHistory = [];
-    pendingQuestion = false;
-    renderOnboarding(container);
+    currentStep = 0; conversationHistory = []; pendingQuestion = false; renderOnboarding(container);
   });
 
   document.getElementById('review-confirm')?.addEventListener('click', () => {
-    // Save table input values back to onboardingData
     onboardingData.name = document.getElementById('rev-input-name').value;
     onboardingData.city = document.getElementById('rev-input-city').value;
     onboardingData.householdSize = parseInt(document.getElementById('rev-input-house').value) || 4;
@@ -750,22 +487,24 @@ function renderReview(container) {
     onboardingData.dailyTransportKm = parseInt(document.getElementById('rev-input-km').value) || 15;
     onboardingData.diet = document.getElementById('rev-input-diet').value;
     onboardingData.electricityUnits = parseInt(document.getElementById('rev-input-elec').value) || 200;
-
-    currentStep = 3; // goals
-    renderOnboarding(container);
+    currentStep = 3; renderOnboarding(container);
   });
+}
+
+function renderReviewRow(label, id, type, value) {
+  return `
+    <div class="review-row">
+      <label for="${id}" class="review-label">${label}</label>
+      <input type="${type}" id="${id}" class="review-value-input" value="${value}" style="text-align: right; border: none; background: transparent; width: 150px; font-weight: 600;" />
+    </div>
+  `;
 }
 
 // ─── Step 4: Goals Selection ─── //
 function renderGoalsSelection(container) {
   container.innerHTML = `
     <div class="onboarding-container page-enter">
-      <div class="onboarding-sidebar">
-        <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
-          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
-        </div>
-      </div>
-
+      ${getOnboardingSidebarHTML()}
       <div class="onboarding-main">
         ${getStepInfo()}
         ${getProgressBar()}
@@ -779,9 +518,7 @@ function renderGoalsSelection(container) {
               const isSelected = onboardingData.goals.includes(goal.value);
               return `
                 <button class="goal-option ${isSelected ? 'selected' : ''}" 
-                     data-value="${goal.value}"
-                     aria-pressed="${isSelected ? 'true' : 'false'}"
-                     aria-label="${goal.text}">
+                     data-value="${goal.value}" aria-pressed="${isSelected}" aria-label="${goal.text}">
                   <div class="goal-option-icon" style="color: var(--green-700); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;" aria-hidden="true">${icons[goal.icon]}</div>
                   <span class="goal-option-text">${goal.text}</span>
                 </button>
@@ -801,73 +538,50 @@ function renderGoalsSelection(container) {
   setupEndSession();
  
   container.querySelectorAll('.goal-option').forEach(item => {
-    const toggleGoal = () => {
+    item.addEventListener('click', () => {
       item.classList.toggle('selected');
-      const value = item.dataset.value;
+      const val = item.dataset.value;
       const isSelected = item.classList.contains('selected');
-      item.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
-      if (onboardingData.goals.includes(value)) {
-        onboardingData.goals = onboardingData.goals.filter(g => g !== value);
-      } else {
-        onboardingData.goals.push(value);
-      }
-    };
-    item.addEventListener('click', toggleGoal);
+      item.setAttribute('aria-pressed', isSelected);
+      onboardingData.goals = isSelected 
+        ? [...onboardingData.goals, val] 
+        : onboardingData.goals.filter(g => g !== val);
+    });
   });
 
   document.getElementById('goals-back')?.addEventListener('click', () => {
-    currentStep = 2; // review
-    renderOnboarding(container);
+    currentStep = 2; renderOnboarding(container);
   });
 
   document.getElementById('goals-continue')?.addEventListener('click', () => {
-    currentStep = 4; // complete
-    renderOnboarding(container);
+    currentStep = 4; renderOnboarding(container);
   });
 }
 
 // ─── Step 5: Complete ─── //
 function renderComplete(container) {
-  const data = onboardingData;
-  const profileForCalc = {
-    primaryTransport: data.primaryTransport,
-    dailyTransportKm: data.dailyTransportKm,
-    diet: data.diet,
-    electricityUnits: data.electricityUnits,
-    lpgCylinders: data.lpgCylinders,
-    city: data.city || 'Pune'
-  };
-  const annual = calcAnnualEmissions(profileForCalc);
-  const annualTonnes = (annual.total / 1000).toFixed(2);
+  const annual = calcAnnualEmissions(onboardingData);
   const moneySaved = calcMoneySaved(Math.round(annual.total * 0.2));
   const trees = calcTreesEquivalent(Math.round(annual.total * 0.2));
 
   container.innerHTML = `
     <div class="onboarding-container page-enter">
-      <div class="onboarding-sidebar">
-        <div style="margin-bottom: var(--space-6); text-align: center; display: flex; justify-content: center; width: 100%;">
-          <img src="${sustainaLogo}" alt="Sustaina Logo" style="max-height: 48px; object-fit: contain; width: auto; max-width: 100%; display: block;" />
-        </div>
-      </div>
-
+      ${getOnboardingSidebarHTML()}
       <div class="onboarding-main">
         ${getStepInfo()}
         ${getProgressBar()}
         <div class="onboarding-content" style="max-width: 500px;">
-          <div class="completion-check">
-            ${icons.check}
-          </div>
-
+          <div class="completion-check">${icons.check}</div>
           <h2 style="font-size: var(--text-2xl); margin-bottom: var(--space-2);">You're all set! 🎉</h2>
           <p class="text-secondary mb-8">Your sustainability profile is ready.</p>
 
           <div class="completion-stats">
             <div class="completion-stat">
-              <div class="completion-stat-value">${annualTonnes}</div>
+              <div class="completion-stat-value">${(annual.total / 1000).toFixed(2)}</div>
               <div class="completion-stat-label">Estimated Carbon Footprint<br />tonnes CO₂e / year</div>
             </div>
             <div class="completion-stat">
-              <div class="completion-stat-value">₹${moneySaved.toLocaleString('en-IN')}</div>
+              <div class="completion-stat-value">${formatCurrency(moneySaved)}</div>
               <div class="completion-stat-label">Potential Savings<br />per year</div>
             </div>
             <div class="completion-stat">
@@ -876,9 +590,7 @@ function renderComplete(container) {
             </div>
           </div>
 
-          <button class="btn btn-primary btn-xl mt-8" id="go-to-dashboard">
-            Go to Dashboard
-          </button>
+          <button class="btn btn-primary btn-xl mt-8" id="go-to-dashboard">Go to Dashboard</button>
         </div>
       </div>
     </div>
@@ -886,17 +598,8 @@ function renderComplete(container) {
 
   document.getElementById('go-to-dashboard')?.addEventListener('click', () => {
     setOnboardingComplete({
-      name: data.name || 'Aryan Medigeri',
-      city: data.city || 'Pune',
+      ...onboardingData,
       state: 'Maharashtra',
-      householdSize: data.householdSize,
-      homeType: data.homeType,
-      primaryTransport: data.primaryTransport,
-      diet: data.diet,
-      dailyTransportKm: data.dailyTransportKm,
-      electricityUnits: data.electricityUnits,
-      lpgCylinders: data.lpgCylinders,
-      sustainabilityGoals: data.goals,
       memberSince: new Date().toISOString(),
     });
 
@@ -907,20 +610,12 @@ function renderComplete(container) {
       icon: '🚀'
     });
 
-    currentStep = 0;
-    restoreLayout();
-
+    currentStep = 0; toggleAppShell(true);
     const stateObj = getState();
-    if (!stateObj.sessionUser) {
-      if (confirm('Onboarding complete! Would you like to create an account to back up your data to the cloud and enable syncing?')) {
-        navigate('auth');
-      } else {
-        navigate('home');
-        window.location.reload();
-      }
+    if (!stateObj.sessionUser && confirm('Would you like to create an account to back up your data?')) {
+      navigate('auth');
     } else {
-      navigate('home');
-      window.location.reload();
+      navigate('home'); window.location.reload();
     }
   });
 }
