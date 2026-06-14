@@ -84,6 +84,10 @@ export function createLineChart(canvasId, labels, values, label = 'Emissions') {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
+  // Accessibility
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', `Line chart showing ${label} over time. ${labels[0]} to ${labels[labels.length - 1]}`);
+
   const gradient = canvas.getContext('2d').createLinearGradient(0, 0, 0, 250);
   gradient.addColorStop(0, 'rgba(45, 80, 22, 0.15)');
   gradient.addColorStop(1, 'rgba(45, 80, 22, 0)');
@@ -205,6 +209,4 @@ export function createBarChart(canvasId, labels, values, label = 'Emissions') {
 // Cleanup all charts
 export function destroyAllCharts() {
   Object.keys(chartInstances).forEach(destroyChart);
-}
-rt);
 }
