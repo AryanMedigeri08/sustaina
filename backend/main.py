@@ -15,7 +15,9 @@ app = FastAPI(title="Sustaina V3 API Backend")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For local MVP development
+    allow_origins=["https://sustaina.vercel.app", 
+        "http://localhost:3000",
+        "http://localhost:5173",],  # For local MVP development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
