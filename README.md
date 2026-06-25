@@ -154,13 +154,6 @@ Calculations are built utilizing 2024 CEA (Central Electricity Authority) and Mo
 - **LPG**: 37.5 kg CO₂ per domestic cylinder.
 - **Monetary Savings**: Evaluated using real-time baseline Indian fuel costs, average state electricity tariffs, and LPG pricing.
 
----
-
-## License
-
-This project is open-source and intended for educational and demonstration purposes.
-
----
 
 ## Author
 
